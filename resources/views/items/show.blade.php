@@ -9,21 +9,21 @@
 <div class="animate-in space-y-4">
 
     <!-- Back -->
-    <a href="{{ URL::previous() }}" class="inline-flex items-center gap-2 text-xs font-medium no-underline transition hover:opacity-80" style="color: #8b949e;">
+    <a href="{{ URL::previous() }}" class="inline-flex items-center gap-2 text-xs font-medium no-underline transition hover:opacity-80" class="text-gray-500">
         <i class="fas fa-arrow-left"></i> Kembali
     </a>
 
     <!-- Header -->
-    <div class="glass p-5">
+    <div class="card p-5">
         <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div>
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fas fa-barcode text-sm" style="color: #60a5fa;"></i>
+                    <i class="fas fa-barcode text-sm" class="text-blue-500"></i>
                     {{ $item->lot_id }}
-                    @if($item->item_id) <span class="text-sm font-normal" style="color: #484f58;">Item: {{ $item->item_id }}</span> @endif
+                    @if($item->item_id) <span class="text-sm font-normal" class="text-gray-400">Item: {{ $item->item_id }}</span> @endif
                 </h2>
                 @if($item->description)
-                    <p class="text-sm mt-1" style="color: #8b949e;">{{ $item->description }}</p>
+                    <p class="text-sm mt-1" class="text-gray-500">{{ $item->description }}</p>
                 @endif
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -48,111 +48,111 @@
         <!-- Info Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-weight-hanging mr-1"></i>End Qty</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-weight-hanging mr-1"></i>End Qty</div>
                 <div class="text-lg font-bold" style="color: #4ade80;">{{ number_format($item->end_qty) }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-scroll mr-1"></i>Paper Type</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-scroll mr-1"></i>Paper Type</div>
                 <div class="text-sm font-semibold text-white">{{ $item->paper_type ?? '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-ruler mr-1"></i>GSM</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-ruler mr-1"></i>GSM</div>
                 <div class="text-sm font-semibold text-white">{{ $item->gsm ?? '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-layer-group mr-1"></i>Plybond</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-layer-group mr-1"></i>Plybond</div>
                 <div class="text-sm font-semibold text-white">{{ $item->plybond ?? '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-arrows-left-right mr-1"></i>Width</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-arrows-left-right mr-1"></i>Width</div>
                 <div class="text-sm font-semibold text-white">{{ $item->width ? $item->width . ' MM' : '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-sync mr-1"></i>Rew ID</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-sync mr-1"></i>Rew ID</div>
                 <div class="text-sm font-semibold text-white">{{ $item->rew_id ?? '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-circle mr-1"></i>Diameter</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-circle mr-1"></i>Diameter</div>
                 <div class="text-sm font-semibold text-white">{{ $item->diameter ?? '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-arrows-up-down mr-1"></i>Thickness</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-arrows-up-down mr-1"></i>Thickness</div>
                 <div class="text-sm font-semibold text-white">{{ $item->thickness ?? '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-star mr-1"></i>Grade</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-star mr-1"></i>Grade</div>
                 <div class="text-sm font-semibold text-white">{{ $item->grade ?? '-' }}</div>
             </div>
             <div class="info-box">
-                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-calendar mr-1"></i>Tanggal</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-calendar mr-1"></i>Tanggal</div>
                 <div class="text-sm font-semibold text-white">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</div>
             </div>
         </div>
 
         @if($item->comments)
             <div class="mt-4 p-3 rounded-xl text-sm" style="background: rgba(30,41,59,0.5); border: 1px solid rgba(255,255,255,0.04);">
-                <span style="color: #484f58;"><i class="fas fa-sticky-note mr-1"></i>Comments:</span>
-                <span style="color: #c9d1d9;">{{ $item->comments }}</span>
+                <span class="text-gray-400"><i class="fas fa-sticky-note mr-1"></i>Comments:</span>
+                <span class="text-gray-600">{{ $item->comments }}</span>
             </div>
         @endif
     </div>
 
     <!-- Location Timeline -->
-    <div class="glass p-5">
+    <div class="card p-5">
         <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-            <i class="fas fa-route text-xs" style="color: #60a5fa;"></i>
+            <i class="fas fa-route text-xs" class="text-blue-500"></i>
             Tracking Lokasi & SO
         </h3>
         <div class="timeline">
             @if($item->so_september && $item->so_september != '-')
             <div class="timeline-item">
-                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">SO September 2025</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">SO September 2025</div>
                 <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_september }}</div>
             </div>
             @endif
             @if($item->so_desember && $item->so_desember != '-')
             <div class="timeline-item filled">
-                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">SO Desember 2025</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">SO Desember 2025</div>
                 <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_desember }}</div>
                 @if($item->pic_2025 && $item->pic_2025 != '-')
-                    <div class="text-xs mt-1" style="color: #8b949e;"><i class="fas fa-user mr-1"></i>PIC: {{ $item->pic_2025 }}</div>
+                    <div class="text-xs mt-1" class="text-gray-500"><i class="fas fa-user mr-1"></i>PIC: {{ $item->pic_2025 }}</div>
                 @endif
             </div>
             @endif
             @if($item->lokasi_receiving && $item->lokasi_receiving != '-')
             <div class="timeline-item">
-                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">Lokasi Receiving</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-map-marker-alt mr-1.5" style="color: #60a5fa;"></i>{{ $item->lokasi_receiving }}</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">Lokasi Receiving</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-map-marker-alt mr-1.5" class="text-blue-500"></i>{{ $item->lokasi_receiving }}</div>
             </div>
             @endif
             @if($item->receiving_2026 && $item->receiving_2026 != '-')
             <div class="timeline-item filled">
-                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">Receiving 2026</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-warehouse mr-1.5" style="color: #60a5fa;"></i>{{ $item->receiving_2026 }}</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">Receiving 2026</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-warehouse mr-1.5" class="text-blue-500"></i>{{ $item->receiving_2026 }}</div>
             </div>
             @endif
             @if($item->pic_2026 && $item->pic_2026 != '-')
             <div class="timeline-item">
-                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">PIC 2026</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">PIC 2026</div>
                 <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-user mr-1.5" style="color: #2dd4bf;"></i>{{ $item->pic_2026 }}</div>
             </div>
             @endif
             @if($item->rcv_cnv_2026 && $item->rcv_cnv_2026 != '-')
             <div class="timeline-item">
-                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">RCV/CNV 2026</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">RCV/CNV 2026</div>
                 <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-right-left mr-1.5" style="color: #facc15;"></i>{{ $item->rcv_cnv_2026 }}</div>
             </div>
             @endif
             @if($item->so_maret_2026 && $item->so_maret_2026 != '-')
             <div class="timeline-item filled">
-                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">SO Maret 2026</div>
+                <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">SO Maret 2026</div>
                 <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_maret_2026 }}</div>
             </div>
             @endif
             @if(!$item->current_location)
                 <div class="text-center py-8">
-                    <i class="fas fa-route text-xl block mb-2" style="color: #30363d;"></i>
-                    <span class="text-xs" style="color: #484f58;">Belum ada data tracking</span>
+                    <i class="fas fa-route text-xl block mb-2" class="text-gray-300"></i>
+                    <span class="text-xs" class="text-gray-400">Belum ada data tracking</span>
                 </div>
             @endif
         </div>
@@ -160,7 +160,7 @@
 
     <!-- Related Defects -->
     @if($defects->count() > 0)
-    <div class="glass overflow-hidden" style="border-left: 3px solid #ef4444;">
+    <div class="card overflow-hidden" style="border-left: 3px solid #ef4444;">
         <div class="px-5 pt-4 pb-2">
             <h3 class="text-sm font-semibold flex items-center gap-2" style="color: #f87171;">
                 <i class="fas fa-triangle-exclamation text-xs"></i>
@@ -176,7 +176,7 @@
                     <tbody>
                         @foreach($defects as $i => $def)
                         <tr>
-                            <td style="color: #30363d;">{{ $i+1 }}</td>
+                            <td class="text-gray-300">{{ $i+1 }}</td>
                             <td><span class="tag tag-gray">{{ $def->year }}</span></td>
                             <td>{{ $def->paper_type ?? '-' }}</td>
                             <td>{{ $def->gsm ?? '-' }}</td>
@@ -195,20 +195,20 @@
             @foreach($defects as $def)
             <div class="mobile-card">
                 <div class="flex justify-between text-xs mb-1.5">
-                    <span style="color: #484f58;">Tahun</span>
+                    <span class="text-gray-400">Tahun</span>
                     <span class="tag tag-gray">{{ $def->year }}</span>
                 </div>
                 <div class="flex justify-between text-xs mb-1.5">
-                    <span style="color: #484f58;">Alasan</span>
+                    <span class="text-gray-400">Alasan</span>
                     <span class="tag tag-red">{{ $def->reason }}</span>
                 </div>
                 <div class="flex justify-between text-xs">
-                    <span style="color: #484f58;">Tanggal</span>
-                    <span style="color: #c9d1d9;">{{ $def->defect_date ?? '-' }}</span>
+                    <span class="text-gray-400">Tanggal</span>
+                    <span class="text-gray-600">{{ $def->defect_date ?? '-' }}</span>
                 </div>
                 @if($def->keterangan)
                 <div class="flex justify-between text-xs mt-1.5">
-                    <span style="color: #484f58;">Ket</span>
+                    <span class="text-gray-400">Ket</span>
                     <span class="truncate text-right" style="color: #c9d1d9; max-width: 60%;">{{ Str::limit($def->keterangan, 40) }}</span>
                 </div>
                 @endif

@@ -11,7 +11,7 @@
     <!-- Search Bar -->
     <form method="GET" action="{{ route('items.index') }}" class="flex gap-2 flex-wrap">
         <div class="relative flex-1 min-w-[200px]">
-            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-xs" style="color: #484f58;"></i>
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-xs" class="text-gray-400"></i>
             <input type="text" name="search" class="input-field pl-9" placeholder="Cari Lot ID, deskripsi, lokasi, SO, PIC..."
                    value="{{ request('search') }}">
         </div>
@@ -26,13 +26,13 @@
     </form>
 
     <!-- Filters -->
-    <div class="glass overflow-hidden">
+    <div class="card overflow-hidden">
         <button onclick="document.getElementById('advFilters').classList.toggle('hidden')"
-                class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-white/[0.02] transition">
-            <span class="text-xs font-semibold uppercase tracking-wide flex items-center gap-2" style="color: #8b949e;">
+                class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition">
+            <span class="text-xs font-semibold uppercase tracking-wide flex items-center gap-2" class="text-gray-500">
                 <i class="fas fa-sliders-h"></i> Filter Lanjutan
             </span>
-            <i class="fas fa-chevron-down text-xs transition-transform" id="filterChevron" style="color: #484f58;"></i>
+            <i class="fas fa-chevron-down text-xs transition-transform" id="filterChevron" class="text-gray-400"></i>
         </button>
         <div id="advFilters" class="hidden {{ (request('paper_type') || request('gsm') || request('width') || request('receiving_2026') || request('status') || request('sort')) ? '' : 'hidden' }}">
             <div class="px-4 pb-4 pt-1">
@@ -40,42 +40,42 @@
                     @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" style="color: #484f58;">Paper Type</label>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Paper Type</label>
                             <select name="paper_type" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
                                 <option value="">Semua</option>
                                 @foreach($paperTypes as $pt)<option value="{{ $pt }}" {{ request('paper_type') == $pt ? 'selected' : '' }}>{{ $pt }}</option>@endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" style="color: #484f58;">GSM</label>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">GSM</label>
                             <select name="gsm" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
                                 <option value="">Semua</option>
                                 @foreach($gsms as $g)<option value="{{ $g }}" {{ request('gsm') == $g ? 'selected' : '' }}>{{ $g }}</option>@endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" style="color: #484f58;">Width</label>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Width</label>
                             <select name="width" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
                                 <option value="">Semua</option>
                                 @foreach($widths as $w)<option value="{{ $w }}" {{ request('width') == $w ? 'selected' : '' }}>{{ $w }}</option>@endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" style="color: #484f58;">Receiving</label>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Receiving</label>
                             <select name="receiving_2026" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
                                 <option value="">Semua</option>
                                 @foreach($locations as $loc)<option value="{{ $loc }}" {{ request('receiving_2026') == $loc ? 'selected' : '' }}>{{ $loc }}</option>@endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" style="color: #484f58;">Status</label>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Status</label>
                             <select name="status" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
                                 <option value="">Semua</option>
                                 @foreach($statuses as $st)<option value="{{ $st }}" {{ request('status') == $st ? 'selected' : '' }}>{{ $st }}</option>@endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" style="color: #484f58;">Sort</label>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Sort</label>
                             <select name="sort" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
                                 <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Terbaru</option>
                                 <option value="lot_id" {{ request('sort') == 'lot_id' ? 'selected' : '' }}>Lot ID</option>
@@ -96,7 +96,7 @@
     @endif
 
     <!-- Result info -->
-    <div class="flex items-center justify-between text-xs" style="color: #484f58;">
+    <div class="flex items-center justify-between text-xs" class="text-gray-400">
         <span><i class="fas fa-list mr-1"></i>{{ number_format($items->total()) }} items</span>
         <span class="hidden sm:inline">Hal. {{ $items->currentPage() }}/{{ $items->lastPage() }}</span>
     </div>
@@ -124,9 +124,9 @@
                 <tbody>
                     @forelse($items as $i => $item)
                     <tr onclick="window.location='{{ route('items.show', $item->id) }}'">
-                        <td style="color: #30363d;">{{ ($items->currentPage()-1)*$items->perPage()+$i+1 }}</td>
+                        <td class="text-gray-300">{{ ($items->currentPage()-1)*$items->perPage()+$i+1 }}</td>
                         <td>
-                            <a href="{{ route('items.show', $item->id) }}" class="font-semibold no-underline hover:underline" style="color: #60a5fa;" onclick="event.stopPropagation();">{{ $item->lot_id }}</a>
+                            <a href="{{ route('items.show', $item->id) }}" class="font-semibold no-underline hover:underline" class="text-blue-500" onclick="event.stopPropagation();">{{ $item->lot_id }}</a>
                         </td>
                         <td class="truncate" style="max-width: 140px;" title="{{ $item->description }}">{{ $item->description ?? '-' }}</td>
                         <td>{{ $item->gsm ?? '-' }}</td>
@@ -136,21 +136,21 @@
                             @if($item->current_location)
                                 <span class="tag tag-blue" title="{{ $item->current_location_label }}">{{ Str::limit($item->current_location, 16) }}</span>
                             @else
-                                <span style="color: #30363d;">-</span>
+                                <span class="text-gray-300">-</span>
                             @endif
                         </td>
                         <td>
                             @if($item->so_desember && $item->so_desember != '-')
                                 <span class="tag tag-purple">{{ Str::limit($item->so_desember, 16) }}</span>
                             @else
-                                <span style="color: #30363d;">-</span>
+                                <span class="text-gray-300">-</span>
                             @endif
                         </td>
                         <td>
                             @if($item->so_maret_2026 && $item->so_maret_2026 != '-')
                                 <span class="tag tag-purple">{{ Str::limit($item->so_maret_2026, 16) }}</span>
                             @else
-                                <span style="color: #30363d;">-</span>
+                                <span class="text-gray-300">-</span>
                             @endif
                         </td>
                         <td class="truncate" style="max-width: 90px;" title="{{ $item->pic_2026 }}">
@@ -167,20 +167,20 @@
                             @if($item->status_barang && $item->status_barang != '-')
                                 <span class="tag {{ $tagClass }}">{{ $item->status_barang }}</span>
                             @else
-                                <span style="color: #30363d;">-</span>
+                                <span class="text-gray-300">-</span>
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('items.show', $item->id) }}" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/5 transition no-underline" onclick="event.stopPropagation();">
-                                <i class="fas fa-arrow-right text-xs" style="color: #484f58;"></i>
+                            <a href="{{ route('items.show', $item->id) }}" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 transition no-underline" onclick="event.stopPropagation();">
+                                <i class="fas fa-arrow-right text-xs" class="text-gray-400"></i>
                             </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
                         <td colspan="12" class="text-center py-10">
-                            <i class="fas fa-inbox text-2xl mb-2 block" style="color: #30363d;"></i>
-                            <span style="color: #484f58;">Tidak ada data</span>
+                            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-300"></i>
+                            <span class="text-gray-400">Tidak ada data</span>
                         </td>
                     </tr>
                     @endforelse
@@ -195,7 +195,7 @@
         <a href="{{ route('items.show', $item->id) }}" class="no-underline block">
             <div class="mobile-card">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="font-semibold text-sm" style="color: #60a5fa;">
+                    <span class="font-semibold text-sm" class="text-blue-500">
                         <i class="fas fa-barcode mr-1 text-xs"></i>{{ $item->lot_id }}
                     </span>
                     @if($item->current_location)
@@ -204,16 +204,16 @@
                 </div>
                 @if($item->description)
                     <div class="flex justify-between text-xs mb-1.5">
-                        <span style="color: #484f58;">Desc</span>
+                        <span class="text-gray-400">Desc</span>
                         <span class="truncate text-right" style="color: #c9d1d9; max-width: 65%;">{{ Str::limit($item->description, 35) }}</span>
                     </div>
                 @endif
                 <div class="flex justify-between text-xs mb-1.5">
-                    <span style="color: #484f58;">Spec</span>
-                    <span style="color: #c9d1d9;">{{ $item->gsm ?? '-' }} / {{ $item->width ?? '-' }} mm</span>
+                    <span class="text-gray-400">Spec</span>
+                    <span class="text-gray-600">{{ $item->gsm ?? '-' }} / {{ $item->width ?? '-' }} mm</span>
                 </div>
                 <div class="flex justify-between text-xs mb-2">
-                    <span style="color: #484f58;">Qty</span>
+                    <span class="text-gray-400">Qty</span>
                     <span class="font-semibold text-white">{{ number_format($item->end_qty) }}</span>
                 </div>
                 <div class="flex flex-wrap gap-1.5">
@@ -241,14 +241,14 @@
         </a>
         @empty
         <div class="text-center py-10">
-            <i class="fas fa-inbox text-2xl mb-2 block" style="color: #30363d;"></i>
-            <span style="color: #484f58;">Tidak ada data</span>
+            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-300"></i>
+            <span class="text-gray-400">Tidak ada data</span>
         </div>
         @endforelse
     </div>
 
     <!-- Pagination -->
-    <div class="flex items-center justify-between text-xs" style="color: #484f58;">
+    <div class="flex items-center justify-between text-xs" class="text-gray-400">
         <span class="hidden sm:inline">
             {{ ($items->currentPage()-1)*$items->perPage()+1 }}-{{ min($items->currentPage()*$items->perPage(), $items->total()) }} / {{ number_format($items->total()) }}
         </span>
