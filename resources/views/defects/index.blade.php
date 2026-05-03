@@ -416,6 +416,8 @@ const paperDefectChart = new Chart(document.getElementById('paperDefectChart'), 
 });
 window.charts.push(paperDefectChart);
 </script>
+
+<script>
 function openSummaryModal() {
     document.getElementById('summaryModal').style.display = 'flex';
 }
