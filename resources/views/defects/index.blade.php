@@ -213,10 +213,12 @@
                         <th>Rew ID</th>
                         <th>Paper</th>
                         <th>GSM</th>
+                        <th>Plybond</th>
                         <th>Width</th>
+                        <th>Grade</th>
                         <th>Alasan</th>
                         <th>Tanggal</th>
-                        <th>Keterangan</th>
+                        <th>Komentar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -228,20 +230,34 @@
                             @if($def->lot_id)
                                 <a href="{{ route('items.index', ['search' => $def->lot_id]) }}" class="font-semibold text-blue-500 no-underline hover:underline">{{ $def->lot_id }}</a>
                             @else
-                                <span class="text-gray-300">-</span>
+                                <span class="text-gray-400">-</span>
                             @endif
                         </td>
                         <td>{{ $def->rew_id ?? '-' }}</td>
-                        <td>{{ $def->paper_type ?? '-' }}</td>
+                        <td class="truncate" style="max-width:120px;" title="{{ $def->paper_type ?? '' }}">{{ $def->paper_type ?? '-' }}</td>
                         <td>{{ $def->gsm ?? '-' }}</td>
+                        <td>{{ $def->plybond ?? '-' }}</td>
                         <td>{{ $def->width ?? '-' }}</td>
+                        <td>
+                            @php
+                                $grade = $def->rollItem->grade ?? null;
+                                if(!$grade || $grade == '-') $grade = '-';
+                            @endphp
+                            <span class="font-medium text-gray-700">{{ $grade }}</span>
+                        </td>
                         <td><span class="tag tag-red">{{ $def->reason }}</span></td>
                         <td>{{ $def->defect_date ?? '-' }}</td>
-                        <td class="truncate" style="max-width:150px;">{{ $def->keterangan ?? '-' }}</td>
+                        <td class="truncate" style="max-width:120px;" title="{{ $def->keterangan ?? '' }}">
+                            @if($def->keterangan && $def->keterangan != '-')
+                                <span class="text-xs text-gray-600"><i class="fas fa-comment-dots mr-1 text-gray-400"></i>{{ $def->keterangan }}</span>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="text-center py-10">
+                        <td colspan="12" class="text-center py-10">
                             <i class="fas fa-check-circle text-2xl mb-2 block text-green-400"></i>
                             <span class="text-gray-400">Tidak ada defect</span>
                         </td>
@@ -268,17 +284,33 @@
                 <span class="text-gray-400">Alasan</span>
                 <span class="tag tag-red">{{ $def->reason }}</span>
             </div>
+            @if($def->rew_id)
             <div class="flex justify-between text-xs mb-1.5">
-                <span class="text-gray-400">Paper</span>
-                <span class="text-gray-600">{{ $def->paper_type ?? '-' }} / {{ $def->gsm ?? '-' }} GSM</span>
+                <span class="text-gray-400">Rew ID</span>
+                <span class="text-gray-600">{{ $def->rew_id }}</span>
             </div>
+            @endif
+            <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-gray-400">Spec</span>
+                <span class="text-gray-600">{{ $def->gsm ?? '-' }} / {{ $def->plybond ?? '-' }} / {{ $def->width ?? '-' }} mm</span>
+            </div>
+            @php
+                $mobGrade = $def->rollItem->grade ?? null;
+                if(!$mobGrade || $mobGrade == '-') $mobGrade = null;
+            @endphp
+            @if($mobGrade)
+                <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-gray-400">Grade</span>
+                    <span class="text-gray-700 font-medium">{{ $mobGrade }}</span>
+                </div>
+            @endif
             <div class="flex justify-between text-xs">
                 <span class="text-gray-400">Tanggal</span>
                 <span class="text-gray-600">{{ $def->defect_date ?? '-' }}</span>
             </div>
-            @if($def->keterangan)
+            @if($def->keterangan && $def->keterangan != '-')
             <div class="flex justify-between text-xs mt-1.5">
-                <span class="text-gray-400">Ket</span>
+                <span class="text-gray-400"><i class="fas fa-comment-dots mr-1"></i>Komen</span>
                 <span class="truncate text-right text-gray-600" style="max-width:60%;">{{ Str::limit($def->keterangan, 40) }}</span>
             </div>
             @endif

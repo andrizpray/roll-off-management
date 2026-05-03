@@ -45,6 +45,9 @@ class DefectItemController extends Controller
 
         $defects = $query->orderBy('defect_date', 'desc')->paginate(50)->withQueryString();
 
+        // Eager load related roll item for grade & comments
+        $defects->loadMissing(['rollItem']);
+
         // Dropdowns
         $reasons = DefectItem::whereNotNull('reason')->distinct()->orderBy('reason')->pluck('reason');
         $paperTypes = DefectItem::whereNotNull('paper_type')->distinct()->orderBy('paper_type')->pluck('paper_type');
