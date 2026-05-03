@@ -91,11 +91,99 @@ class RollItemController extends Controller
         ));
     }
 
+    public function create()
+    {
+        return view('items.form', ['item' => null]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'lot_id' => 'required|string|max:255|unique:roll_items,lot_id',
+            'item_id' => 'nullable|string|max:255',
+            'end_qty' => 'nullable|numeric',
+            'rew_id' => 'nullable|string|max:255',
+            'tr_date' => 'nullable|date',
+            'tr_time' => 'nullable|string|max:20',
+            'description' => 'nullable|string|max:500',
+            'paper_type' => 'nullable|string|max:100',
+            'gsm' => 'nullable|string|max:50',
+            'plybond' => 'nullable|string|max:50',
+            'width' => 'nullable|string|max:50',
+            'diameter' => 'nullable|string|max:50',
+            'thickness' => 'nullable|string|max:50',
+            'grade' => 'nullable|string|max:50',
+            'comments' => 'nullable|string|max:500',
+            'so_september' => 'nullable|string|max:255',
+            'pic_2025' => 'nullable|string|max:255',
+            'lokasi_receiving' => 'nullable|string|max:255',
+            'so_desember' => 'nullable|string|max:255',
+            'receiving_2026' => 'nullable|string|max:255',
+            'pic_2026' => 'nullable|string|max:255',
+            'rcv_cnv_2026' => 'nullable|string|max:255',
+            'so_maret_2026' => 'nullable|string|max:255',
+            'status_barang' => 'nullable|string|max:50',
+        ]);
+
+        RollItem::create($validated);
+
+        return redirect()->route('items.index')->with('success', 'Roll item berhasil ditambahkan.');
+    }
+
     public function show($id)
     {
         $item = RollItem::findOrFail($id);
         $defects = \App\Models\DefectItem::where('lot_id', $item->lot_id)->get();
         return view('items.show', compact('item', 'defects'));
+    }
+
+    public function edit($id)
+    {
+        $item = RollItem::findOrFail($id);
+        return view('items.form', compact('item'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $item = RollItem::findOrFail($id);
+
+        $validated = $request->validate([
+            'lot_id' => 'required|string|max:255|unique:roll_items,lot_id,' . $item->id,
+            'item_id' => 'nullable|string|max:255',
+            'end_qty' => 'nullable|numeric',
+            'rew_id' => 'nullable|string|max:255',
+            'tr_date' => 'nullable|date',
+            'tr_time' => 'nullable|string|max:20',
+            'description' => 'nullable|string|max:500',
+            'paper_type' => 'nullable|string|max:100',
+            'gsm' => 'nullable|string|max:50',
+            'plybond' => 'nullable|string|max:50',
+            'width' => 'nullable|string|max:50',
+            'diameter' => 'nullable|string|max:50',
+            'thickness' => 'nullable|string|max:50',
+            'grade' => 'nullable|string|max:50',
+            'comments' => 'nullable|string|max:500',
+            'so_september' => 'nullable|string|max:255',
+            'pic_2025' => 'nullable|string|max:255',
+            'lokasi_receiving' => 'nullable|string|max:255',
+            'so_desember' => 'nullable|string|max:255',
+            'receiving_2026' => 'nullable|string|max:255',
+            'pic_2026' => 'nullable|string|max:255',
+            'rcv_cnv_2026' => 'nullable|string|max:255',
+            'so_maret_2026' => 'nullable|string|max:255',
+            'status_barang' => 'nullable|string|max:50',
+        ]);
+
+        $item->update($validated);
+
+        return redirect()->route('items.show', $item->id)->with('success', 'Roll item berhasil diupdate.');
+    }
+
+    public function destroy($id)
+    {
+        $item = RollItem::findOrFail($id);
+        $item->delete();
+        return redirect()->route('items.index')->with('success', 'Roll item berhasil dihapus.');
     }
 
     public function export(Request $request)

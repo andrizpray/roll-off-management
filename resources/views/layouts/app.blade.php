@@ -185,6 +185,18 @@
         .animate-in { animation: fadeIn 0.4s ease-out; }
 
         .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Print */
+        @media print {
+            body { background: #fff !important; }
+            .sidebar, .sidebar-overlay, header, footer, .btn, button[onclick*="toggleSidebar"] { display: none !important; }
+            main { padding: 0 !important; }
+            .card { border: 1px solid #ddd !important; box-shadow: none !important; page-break-inside: avoid; }
+            .data-table tbody tr:hover { background: transparent !important; }
+            .tag { border: 1px solid #ccc !important; background: #f9f9f9 !important; }
+            .animate-in { animation: none !important; }
+            @page { margin: 15mm; }
+        }
     </style>
     @stack('styles')
 </head>

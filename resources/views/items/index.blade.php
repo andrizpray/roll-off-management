@@ -15,6 +15,9 @@
             <input type="text" name="search" class="input-field pl-9" placeholder="Cari Lot ID, deskripsi, lokasi, SO, PIC..."
                    value="{{ request('search') }}">
         </div>
+        <a href="{{ route('items.create') }}" class="btn btn-primary" style="background: #7c3aed;">
+            <i class="fas fa-plus text-xs"></i> Tambah
+        </a>
         <button class="btn btn-primary" type="submit">
             <i class="fas fa-search text-xs"></i> Cari
         </button>

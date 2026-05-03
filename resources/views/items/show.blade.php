@@ -27,6 +27,12 @@
                 @endif
             </div>
             <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('items.edit', $item->id) }}" class="btn btn-primary flex items-center gap-1.5" style="padding: 5px 12px; font-size: 0.75rem;">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <button onclick="window.print()" class="btn btn-ghost flex items-center gap-1.5" style="padding: 5px 12px; font-size: 0.75rem;">
+                    <i class="fas fa-print"></i> Print
+                </button>
                 @if($item->current_location)
                     <span class="tag tag-blue" style="padding: 5px 10px; font-size: 0.8rem;">
                         <i class="fas fa-map-pin"></i> {{ $item->current_location }}
