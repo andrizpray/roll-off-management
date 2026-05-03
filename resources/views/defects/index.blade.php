@@ -381,7 +381,6 @@ new Chart(document.getElementById('paperDefectChart'), {
     }
 });
 </script>
-@endpush
 
 <script>
 function openSummaryModal() {
@@ -402,4 +401,4 @@ document.getElementById('summaryModal').addEventListener('click', function(e) {
     if (e.target === this) closeSummaryModal();
 });
 </script>
-@endsection
+@endpush
