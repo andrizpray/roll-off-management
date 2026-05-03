@@ -67,9 +67,9 @@ class RollItemController extends Controller
             $query->where('status_barang', $status);
         }
 
-        // Filter: Grade
-        if ($grade = $request->input('grade')) {
-            $query->where('grade', $grade);
+        // Filter: Grade (multi-select via grade[] query param)
+        if ($grades = $request->input('grade')) {
+            $query->whereIn('grade', (array) $grades);
         }
 
         // Sort

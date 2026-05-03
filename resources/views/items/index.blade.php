@@ -79,10 +79,17 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Grade</label>
-                            <select name="grade" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
-                                <option value="">Semua</option>
-                                @foreach($grades as $g)<option value="{{ $g }}" {{ request('grade') == $g ? 'selected' : '' }}>{{ $g }}</option>@endforeach
-                            </select>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach($grades as $g)
+                                    <label class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition border {{ in_array($g, (array) request('grade')) ? 'bg-blue-50 border-blue-400 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300' }}">
+                                        <input type="checkbox" name="grade[]" value="{{ $g }}" {{ in_array($g, (array) request('grade')) ? 'checked' : '' }} class="hidden" onchange="document.getElementById('filterForm').submit()">
+                                        {{ $g }}
+                                    </label>
+                                @endforeach
+                                @if(request('grade'))
+                                    <input type="hidden" name="grade[]" value="">
+                                @endif
+                            </div>
                         </div>
                         <div>
                             <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Sort</label>

@@ -58,7 +58,7 @@ class RollItemsExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         }
 
         if ($grade = $this->filters['grade'] ?? null) {
-            $query->where('grade', $grade);
+            $query->whereIn('grade', (array) $grade);
         }
 
         $sortField = $this->filters['sort'] ?? 'lot_id';
