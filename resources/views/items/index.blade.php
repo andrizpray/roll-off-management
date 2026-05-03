@@ -140,6 +140,7 @@
                         <th>GSM</th>
                         <th>Grade</th>
                         <th>Width</th>
+                        <th>TR Date</th>
                         <th>Qty</th>
                         <th>Lokasi</th>
                         <th>Status</th>
@@ -159,6 +160,7 @@
                         <td>{{ $item->gsm ?? '-' }}</td>
                         <td><span class="font-medium text-gray-700">{{ $item->grade ?? '-' }}</span></td>
                         <td>{{ $item->width ?? '-' }}</td>
+                        <td class="text-xs text-gray-500">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</td>
                         <td class="font-semibold text-gray-900">{{ number_format($item->end_qty) }}</td>
                         <td>
                             @if($item->current_location)
@@ -196,7 +198,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="text-center py-10">
+                        <td colspan="13" class="text-center py-10">
                             <i class="fas fa-inbox text-2xl mb-2 block text-gray-400"></i>
                             <span class="text-gray-400">Tidak ada data</span>
                         </td>
@@ -246,6 +248,12 @@
                     <span class="text-gray-400">Qty</span>
                     <span class="font-semibold text-gray-900">{{ number_format($item->end_qty) }}</span>
                 </div>
+                @if($item->tr_date)
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-gray-400">TR Date</span>
+                        <span class="text-gray-500">{{ \Carbon\Carbon::parse($item->tr_date)->format('d M Y') }}</span>
+                    </div>
+                @endif
                 <div class="flex flex-wrap gap-1.5">
                     @php
                         $tagClass = 'tag-gray';
