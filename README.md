@@ -1,58 +1,123 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📦 Roll Off Management
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem manajemen inventory **paper roll** — tracking lokasi, monitoring defect, dan analisis data untuk gudang roll off.
 
-## About Laravel
+![Laravel](https://img.shields.io/badge/Laravel-13-red)
+![PHP](https://img.shields.io/badge/PHP-8.3-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8-orange)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Fitur
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Dashboard
+- **4 chart interaktif** (Chart.js) — distribusi paper type, lokasi, GSM, dan defect
+- **4 stat card** — total rolls, total defects, item tanpa lokasi, distribusi status
+- Real-time clock di topbar
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Roll Items (Inventory)
+- **CRUD lengkap** — create, read, update, delete roll items
+- **Search & filter** — cari by Lot ID, Item ID, description, filter paper type, GSM, width, grade (multi-select), status, lokasi
+- **Sorting** — klik kolom header untuk sort ascending/descending
+- **Pagination** — 50 item per halaman
+- **Export Excel** — export data yang terfilter ke .xlsx
+- **QR Code** — generate QR per item (encode Lot ID), bisa download PNG
+- **Detail page** — informasi lengkap + timeline lokasi + daftar defect terkait
+- **Print layout** — CSS khusus untuk cetak
 
-## Learning Laravel
+### Barang Bermasalah (Defects)
+- **2 chart analitik** — trend defect per bulan, distribusi paper type defect
+- **Filter** — year, paper type, reason, search
+- **Export Excel** — export defect data
+- **Summary Report** — export 3-sheet Excel (Ringkasan, Defects, Paper Type)
+- **Detail modal** — ringkasan per paper type
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Smart Sync Import Excel
+- **Upload via web** — drag & drop file Excel (.xlsx/.xls/.csv)
+- **Preview sebelum sync** — tampilkan statistik: item baru, diupdate, tidak berubah
+- **Diff perubahan** — tabel menunjukkan field yang berubah (old → new)
+- **Upsert** — item baru ditambahkan, item yang sudah ada diupdate
+- **Auto-import defect** — sheet "Barang Bermasalah 2025/2026" otomatis diimport
+- **Konfirmasi** — tombol sync dengan konfirmasi dialog
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Notifikasi
+- 🔔 **Bell icon** di topbar dengan badge counter
+- 🔴 **Item Tanpa Lokasi** — roll items yang belum punya lokasi tracking
+- 🟡 **Defect Baru** — barang bermasalah yang ditambahkan 7 hari terakhir
+- Auto-load via AJAX, klik item → redirect ke detail
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Tema
+- 🌙 **Dark/Light mode** — toggle via tombol sun/moon
+- Otomatis detect preferensi OS (`prefers-color-scheme`)
+- Persist via `localStorage`
+- Chart.js rebuild warna saat ganti tema
 
-## Agentic Development
+### Mobile Responsive
+- Desktop: tabel data dengan sticky header
+- Mobile: card view yang rapi
+- Sidebar collapsible dengan overlay di mobile
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## 🛠️ Tech Stack
 
-```bash
-composer require laravel/boost --dev
+| Komponen | Teknologi |
+|---|---|
+| Framework | Laravel 13 |
+| Frontend | Blade + Tailwind CSS CDN |
+| Charts | Chart.js v4 |
+| Icons | Font Awesome 6 |
+| QR Code | QRCode.js v1 |
+| Excel | Maatwebsite/Excel (PhpSpreadsheet) |
+| Database | MySQL 8 |
+| Server | Nginx + PHP 8.3 FPM |
 
-php artisan boost:install
+## 📁 Struktur Project
+
+```
+app/
+├── Models/
+│   ├── RollItem.php          # Model roll item (21 fillable fields + accessors)
+│   └── DefectItem.php        # Model defect item (14 fillable fields)
+├── Services/
+│   ├── ImportSyncService.php # Excel import: preview + sync
+│   └── NotificationService.php # Notification data provider
+├── Http/Controllers/
+│   ├── DashboardController.php
+│   ├── RollItemController.php
+│   └── DefectItemController.php
+├── Exports/
+│   ├── RollItemsExport.php
+│   ├── DefectItemsExport.php
+│   └── SummaryReportExport.php
+└── Console/Commands/
+    ├── ImportExcelData.php   # CLI import from terminal
+    └── ReparseDescriptions.php
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## 🚀 Instalasi
 
-## Contributing
+```bash
+git clone git@github.com:andrizpray/roll-off-management.git
+cd roll-off-management
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+composer install
+cp .env.example .env
+php artisan key:generate
 
-## Code of Conduct
+# Konfigurasi database di .env
+php artisan migrate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# (Opsional) Import data dari Excel
+php artisan import:excel /path/to/data.xlsx
+```
 
-## Security Vulnerabilities
+## 📊 Data Model
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Roll Items
+Kolom tracking lokasi (dicek berurutan):
+`SO Desember → Receiving 2026 → SO Maret 2026 → PIC 2026 → RCV/CNV 2026 → SO September`
 
-## License
+### Defect Items
+- Data defect 2025 dan 2026 dari sheet terpisah
+- Auto-fill spec (paper type, GSM, dll) dari roll_items via `lot_id` lookup
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📝 License
+
+Private repository.
