@@ -33,6 +33,9 @@
                 <button onclick="window.print()" class="btn btn-ghost flex items-center gap-1.5" style="padding: 5px 12px; font-size: 0.75rem;">
                     <i class="fas fa-print"></i> Print
                 </button>
+                <button onclick="document.getElementById('qrModal').style.display='flex'" class="btn btn-ghost flex items-center gap-1.5" style="padding: 5px 12px; font-size: 0.75rem;">
+                    <i class="fas fa-qrcode"></i> QR Code
+                </button>
                 @if($item->current_location)
                     <span class="tag tag-blue" style="padding: 5px 10px; font-size: 0.8rem;">
                         <i class="fas fa-map-pin"></i> {{ $item->current_location }}
@@ -225,4 +228,48 @@
     @endif
 
 </div>
+
+<!-- QR Code Modal -->
+<div id="qrModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal-card rounded-xl shadow-2xl max-w-xs w-full p-6 text-center">
+        <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center justify-center gap-2">
+            <i class="fas fa-qrcode text-blue-500"></i> QR Code
+        </h3>
+        <div class="flex justify-center mb-4">
+            <div id="qrCodeShow" class="inline-block p-3 bg-white rounded-xl border border-gray-100"></div>
+        </div>
+        <div class="text-sm font-bold text-gray-900 mb-1">{{ $item->lot_id }}</div>
+        <div class="text-xs text-gray-400 mb-4">{{ $item->paper_type ?? '-' }} · {{ $item->gsm ?? '-' }} GSM</div>
+        <div class="flex gap-2">
+            <button onclick="downloadQR()" class="btn btn-primary flex-1 flex items-center justify-center gap-1.5" style="font-size:0.75rem;">
+                <i class="fas fa-download"></i> Download
+            </button>
+            <button onclick="document.getElementById('qrModal').style.display='none'" class="btn btn-ghost flex-1" style="font-size:0.75rem;">Tutup</button>
+        </div>
+    </div>
+</div>
+
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new QRCode(document.getElementById('qrCodeShow'), {
+        text: '{{ $item->lot_id }}',
+        width: 180,
+        height: 180,
+        colorDark: '#1e293b',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+});
+function downloadQR() {
+    const canvas = document.querySelector('#qrCodeShow canvas');
+    if (!canvas) return;
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'QR-{{ $item->lot_id }}.png';
+    a.click();
+}
+</script>
+@endpush

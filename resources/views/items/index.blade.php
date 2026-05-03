@@ -146,6 +146,7 @@
                         <th>Status</th>
                         <th>Komentar</th>
                         <th style="width: 35px;"></th>
+                        <th style="width: 35px;"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -191,6 +192,11 @@
                             @endif
                         </td>
                         <td>
+                            <button onclick="showQR('{{ $item->lot_id }}', '{{ $item->paper_type ?? "-" }}', '{{ $item->gsm ?? "-" }}')" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 transition no-underline" onclick="event.stopPropagation();" title="QR Code">
+                                <i class="fas fa-qrcode text-xs text-gray-400"></i>
+                            </button>
+                        </td>
+                        <td>
                             <a href="{{ route('items.show', $item->id) }}" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 transition no-underline" onclick="event.stopPropagation();">
                                 <i class="fas fa-arrow-right text-xs text-gray-400"></i>
                             </a>
@@ -198,7 +204,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="13" class="text-center py-10">
+                        <td colspan="14" class="text-center py-10">
                             <i class="fas fa-inbox text-2xl mb-2 block text-gray-400"></i>
                             <span class="text-gray-400">Tidak ada data</span>
                         </td>
@@ -254,7 +260,7 @@
                         <span class="text-gray-500">{{ \Carbon\Carbon::parse($item->tr_date)->format('d M Y') }}</span>
                     </div>
                 @endif
-                <div class="flex flex-wrap gap-1.5">
+                <div class="flex flex-wrap gap-1.5 mb-2">
                     @php
                         $tagClass = 'tag-gray';
                         $st = strtolower($item->status_barang ?? '');
@@ -265,6 +271,9 @@
                     @if($item->status_barang && $item->status_barang != '-')
                         <span class="tag {{ $tagClass }}" style="font-size: 0.62rem;">{{ $item->status_barang }}</span>
                     @endif
+                    <button onclick="event.preventDefault();showQR('{{ $item->lot_id }}', '{{ $item->paper_type ?? "-" }}', '{{ $item->gsm ?? "-" }}')" class="tag tag-gray" style="font-size:0.62rem;cursor:pointer;border:1px dashed #94a3b8;">
+                        <i class="fas fa-qrcode mr-0.5"></i> QR
+                    </button>
                 </div>
             </div>
         </a>
@@ -284,6 +293,26 @@
         <div class="ml-auto">{{ $items->links('vendor.pagination.custom') }}</div>
     </div>
 
+</div>
+
+<!-- QR Code Modal -->
+<div id="qrModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+    <div class="modal-card rounded-xl shadow-2xl max-w-xs w-full p-6 text-center">
+        <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center justify-center gap-2">
+            <i class="fas fa-qrcode text-blue-500"></i> QR Code
+        </h3>
+        <div class="flex justify-center mb-4">
+            <div id="qrCodeIndex" class="inline-block p-3 bg-white rounded-xl border border-gray-100"></div>
+        </div>
+        <div class="text-sm font-bold text-gray-900 mb-1" id="qrLotId"></div>
+        <div class="text-xs text-gray-400 mb-4" id="qrSpec"></div>
+        <div class="flex gap-2">
+            <button onclick="downloadQRIndex()" class="btn btn-primary flex-1 flex items-center justify-center gap-1.5" style="font-size:0.75rem;">
+                <i class="fas fa-download"></i> Download
+            </button>
+            <button onclick="document.getElementById('qrModal').style.display='none'" class="btn btn-ghost flex-1" style="font-size:0.75rem;">Tutup</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -362,6 +391,31 @@ function printSelected() {
     w.document.write(printHtml);
     w.document.close();
     w.onload = () => { w.print(); };
+}
+
+// QR Code
+function showQR(lotId, paperType, gsm) {
+    document.getElementById('qrLotId').textContent = lotId;
+    document.getElementById('qrSpec').textContent = paperType + ' · ' + gsm + ' GSM';
+    const container = document.getElementById('qrCodeIndex');
+    container.innerHTML = '';
+    new QRCode(container, {
+        text: lotId,
+        width: 180,
+        height: 180,
+        colorDark: '#1e293b',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+    document.getElementById('qrModal').style.display = 'flex';
+}
+function downloadQRIndex() {
+    const canvas = document.querySelector('#qrCodeIndex canvas');
+    if (!canvas) return;
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'QR-' + document.getElementById('qrLotId').textContent + '.png';
+    a.click();
 }
 </script>
 @endsection
