@@ -309,7 +309,7 @@ Chart.defaults.font.size = 11;
 const gridColor = '#f1f5f9';
 
 // 5.2 Trend per bulan
-const trendLabels = [{!! $defectTrend->map(fn($d) => '"'.substr($d->month,0,3).' ".$d->year."\'')->join(',') !!}];
+const trendLabels = [{!! $defectTrend->map(fn($d) => "'".substr($d->month,0,3)." ".$d->year."'")->join(',') !!}];
 const trendData = [{!! $defectTrend->pluck('count')->join(',') !!}];
 
 new Chart(document.getElementById('trendChart'), {
