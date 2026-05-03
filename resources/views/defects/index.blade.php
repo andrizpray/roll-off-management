@@ -12,39 +12,39 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="card stat-card red p-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-semibold uppercase tracking-wide" style="color: #f87171;">Total Defects</span>
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background: rgba(239,68,68,0.12);">
-                    <i class="fas fa-bug text-xs" style="color: #f87171;"></i>
+                <span class="text-[10px] font-semibold uppercase tracking-wide" >Total Defects</span>
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center" class="bg-red-50">
+                    <i class="fas fa-bug text-xs" ></i>
                 </div>
             </div>
-            <div class="text-xl lg:text-2xl font-extrabold text-white">{{ number_format($totalDefects) }}</div>
+            <div class="text-xl lg:text-2xl font-extrabold text-gray-900">{{ number_format($totalDefects) }}</div>
         </div>
         <div class="card stat-card purple p-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-semibold uppercase tracking-wide" style="color: #a78bfa;">Tahun 2025</span>
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background: rgba(139,92,246,0.12);">
-                    <i class="fas fa-calendar-alt text-xs" style="color: #a78bfa;"></i>
+                <span class="text-[10px] font-semibold uppercase tracking-wide text-purple-500">Tahun 2025</span>
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-purple-50">
+                    <i class="fas fa-calendar-alt text-xs text-purple-500"></i>
                 </div>
             </div>
-            <div class="text-xl lg:text-2xl font-extrabold text-white">{{ number_format($defect2025) }}</div>
+            <div class="text-xl lg:text-2xl font-extrabold text-gray-900">{{ number_format($defect2025) }}</div>
         </div>
         <div class="card stat-card teal p-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-semibold uppercase tracking-wide" style="color: #2dd4bf;">Tahun 2026</span>
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background: rgba(20,184,166,0.12);">
-                    <i class="fas fa-calendar-check text-xs" style="color: #2dd4bf;"></i>
+                <span class="text-[10px] font-semibold uppercase tracking-wide text-teal-600">Tahun 2026</span>
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-teal-50">
+                    <i class="fas fa-calendar-check text-xs text-teal-600"></i>
                 </div>
             </div>
-            <div class="text-xl lg:text-2xl font-extrabold text-white">{{ number_format($defect2026) }}</div>
+            <div class="text-xl lg:text-2xl font-extrabold text-gray-900">{{ number_format($defect2026) }}</div>
         </div>
         <div class="card stat-card blue p-4">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] font-semibold uppercase tracking-wide" class="text-blue-500">Ditampilkan</span>
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background: rgba(59,130,246,0.12);">
-                    <i class="fas fa-filter text-xs" class="text-blue-500"></i>
+                <span class="text-[10px] font-semibold uppercase tracking-wide text-blue-500">Ditampilkan</span>
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50">
+                    <i class="fas fa-filter text-xs text-blue-500"></i>
                 </div>
             </div>
-            <div class="text-xl lg:text-2xl font-extrabold text-white">{{ number_format($defects->total()) }}</div>
+            <div class="text-xl lg:text-2xl font-extrabold text-gray-900">{{ number_format($defects->total()) }}</div>
         </div>
     </div>
 
@@ -52,7 +52,7 @@
     <div class="card overflow-hidden">
         <button onclick="document.getElementById('defectFilters').classList.toggle('hidden')"
                 class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition">
-            <span class="text-xs font-semibold uppercase tracking-wide flex items-center gap-2" class="text-gray-500">
+            <span class="text-xs font-semibold uppercase tracking-wide flex items-center gap-2" text-gray-500">
                 <i class="fas fa-filter"></i> Filter
             </span>
             <i class="fas fa-chevron-down text-xs transition-transform" class="text-gray-400"></i>
