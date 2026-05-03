@@ -124,7 +124,7 @@
                 <tbody>
                     @forelse($items as $i => $item)
                     <tr onclick="window.location='{{ route('items.show', $item->id) }}'">
-                        <td class="text-gray-300">{{ ($items->currentPage()-1)*$items->perPage()+$i+1 }}</td>
+                        <td class="text-gray-400">{{ ($items->currentPage()-1)*$items->perPage()+$i+1 }}</td>
                         <td>
                             <a href="{{ route('items.show', $item->id) }}" class="font-semibold no-underline hover:underline" class="text-blue-500" onclick="event.stopPropagation();">{{ $item->lot_id }}</a>
                         </td>
@@ -136,21 +136,21 @@
                             @if($item->current_location)
                                 <span class="tag tag-blue" title="{{ $item->current_location_label }}">{{ Str::limit($item->current_location, 16) }}</span>
                             @else
-                                <span class="text-gray-300">-</span>
+                                <span class="text-gray-400">-</span>
                             @endif
                         </td>
                         <td>
                             @if($item->so_desember && $item->so_desember != '-')
                                 <span class="tag tag-purple">{{ Str::limit($item->so_desember, 16) }}</span>
                             @else
-                                <span class="text-gray-300">-</span>
+                                <span class="text-gray-400">-</span>
                             @endif
                         </td>
                         <td>
                             @if($item->so_maret_2026 && $item->so_maret_2026 != '-')
                                 <span class="tag tag-purple">{{ Str::limit($item->so_maret_2026, 16) }}</span>
                             @else
-                                <span class="text-gray-300">-</span>
+                                <span class="text-gray-400">-</span>
                             @endif
                         </td>
                         <td class="truncate" style="max-width: 90px;" title="{{ $item->pic_2026 }}">
@@ -167,7 +167,7 @@
                             @if($item->status_barang && $item->status_barang != '-')
                                 <span class="tag {{ $tagClass }}">{{ $item->status_barang }}</span>
                             @else
-                                <span class="text-gray-300">-</span>
+                                <span class="text-gray-400">-</span>
                             @endif
                         </td>
                         <td>
@@ -179,7 +179,7 @@
                     @empty
                     <tr>
                         <td colspan="12" class="text-center py-10">
-                            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-300"></i>
+                            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-400"></i>
                             <span class="text-gray-400">Tidak ada data</span>
                         </td>
                     </tr>
@@ -241,7 +241,7 @@
         </a>
         @empty
         <div class="text-center py-10">
-            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-300"></i>
+            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-400"></i>
             <span class="text-gray-400">Tidak ada data</span>
         </div>
         @endforelse

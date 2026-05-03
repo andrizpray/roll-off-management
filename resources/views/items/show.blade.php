@@ -151,7 +151,7 @@
             @endif
             @if(!$item->current_location)
                 <div class="text-center py-8">
-                    <i class="fas fa-route text-xl block mb-2" class="text-gray-300"></i>
+                    <i class="fas fa-route text-xl block mb-2" class="text-gray-400"></i>
                     <span class="text-xs" class="text-gray-400">Belum ada data tracking</span>
                 </div>
             @endif
@@ -176,7 +176,7 @@
                     <tbody>
                         @foreach($defects as $i => $def)
                         <tr>
-                            <td class="text-gray-300">{{ $i+1 }}</td>
+                            <td class="text-gray-400">{{ $i+1 }}</td>
                             <td><span class="tag tag-gray">{{ $def->year }}</span></td>
                             <td>{{ $def->paper_type ?? '-' }}</td>
                             <td>{{ $def->gsm ?? '-' }}</td>

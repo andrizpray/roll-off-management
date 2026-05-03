@@ -142,13 +142,13 @@
                 <tbody>
                     @forelse($defects as $i => $def)
                     <tr>
-                        <td class="text-gray-300">{{ ($defects->currentPage()-1)*$defects->perPage()+$i+1 }}</td>
+                        <td class="text-gray-400">{{ ($defects->currentPage()-1)*$defects->perPage()+$i+1 }}</td>
                         <td><span class="tag tag-gray">{{ $def->year }}</span></td>
                         <td>
                             @if($def->lot_id)
                                 <a href="{{ route('items.index', ['search' => $def->lot_id]) }}" class="font-semibold no-underline hover:underline" class="text-blue-500">{{ $def->lot_id }}</a>
                             @else
-                                <span class="text-gray-300">-</span>
+                                <span class="text-gray-400">-</span>
                             @endif
                         </td>
                         <td>{{ $def->rew_id ?? '-' }}</td>
