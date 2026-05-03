@@ -267,16 +267,110 @@ class ImportExcelData extends Command
 
         if (empty($description)) return $result;
 
-        // Pattern examples:
-        // "B KRAFT BK125 E150 690" → paper_type=B KRAFT, gsm=BK125, plybond=E150, width=690
-        // "B Kraft BK120 E150 210" → paper_type=B Kraft, gsm=BK120, plybond=E150, width=210
-        // "B Kraft BK275 E150 2250"
+        $desc = trim($description);
 
-        if (preg_match('/^(.+?)\s+(BK\d{2,3})\s+(E\d{2,3})\s+(\d+)\s*$/', trim($description), $m)) {
-            $result['paper_type'] = strtoupper(trim($m[1]));
-            $result['gsm'] = strtoupper($m[2]);
-            $result['plybond'] = strtoupper($m[3]);
-            $result['width'] = $m[4];
+        // Pattern: {Paper Type} {GSM_PREFIX+GSM} E{PLYBOND} {WIDTH}
+        // Examples:
+        //   B KRAFT BK125 E150 690
+        //   Core Board CO300 E200 600
+        //   Paper Medium MP120 E150 800
+        //   Grey Board GB300 E150 665
+        //   T/B B Kraft BKTB300 E150 850
+        //   Chip Board CB250 E150 800
+        //   COB Core Board B COB500 E300 100
+        //   DUPLEX COATED DR0250 E150 350
+        //   LAMINASI B KRAFT BKL270 E150 210
+        //   PE03 B Kraft PE T/B Glossy BPTBG325 E150 950
+        //   PE02 B Kraft PE Glossy BRPG290 E150 700
+        //   Barrier Coating Board BCB290 E150 600
+        //   Brown Board BB300 E150 600
+        //   NO SPEC B KRAFT BKN125 E150 100
+        //   01 SNI B Kraft T/B BKTBS500 E150 1200
+        //   DK DUPLEX KRAFT DK310 E150 700
+        //   OCT BASE PAPER COATING OCT270 E150 665
+        //   PE Duplex Roll DRP0265 E150 790
+
+        // Multi-word paper type patterns (order matters — longest match first)
+        $paperPatterns = [
+            'Barrier Coating Board',
+            'COB Core Board',
+            'OCT BASE PAPER COATING',
+            'OCTN BASE PAPER COATING',
+            'COATED DUPLEX OCT',
+            'DUPLEX COATED',
+            'DK DUPLEX KRAFT',
+            'Paper Medium',
+            'Core Board',
+            'Core Borad',
+            'MPC Medium Paper',
+            'Grey Board',
+            'Brown Board',
+            'Chip Board',
+            'Yellow Board',
+            'T/B B Kraft',
+            'PE03 B Kraft PE T/B Glossy',
+            'PE07 Natural Roll PE Glossy',
+            'PE02 B Kraft PE Glossy',
+            'BPTB B Kraft PE T/B',
+            'BK03 B Kraft',
+            'BK02 B Kraft',
+            'LAMINASI B KRAFT',
+            'LAMINASI B Kraft',
+            'Base Paper Coating Grey',
+            'Base Paper Coating',
+            'PE B Kraft',
+            'PE Duplex Roll',
+            'OCT2 BASE',
+            'OCTN BASE',
+            '01 SNI B Kraft T/B',
+            '01 B Kraft Warna',
+            'B KRAFT',
+            'B Kraft',
+            'Non Spec B',
+            'Non Spec',
+            'KBD KRAFT',
+            'KBD Kraft',
+            'White Kraft',
+            'SNI B',
+            'NO SPEC B',
+            'No Spec B',
+        ];
+
+        $paperType = null;
+        $remaining = $desc;
+
+        foreach ($paperPatterns as $pattern) {
+            if (stripos($desc, $pattern) === 0) {
+                $paperType = $pattern;
+                $remaining = trim(substr($desc, strlen($pattern)));
+                break;
+            }
+        }
+
+        if (!$paperType) {
+            // Fallback: try to get GSM from middle if no paper type match
+            if (preg_match('/([A-Z]{2,5}?\d{2,3})\s+E\d{2,3}\s+(\d+)\s*$/', $desc, $m)) {
+                $result['gsm'] = strtoupper($m[1]);
+                $result['plybond'] = 'E' . substr(strtoupper($m[0]), strpos(strtoupper($m[0]), 'E') + 1);
+                $result['width'] = $m[2];
+            }
+            return $result;
+        }
+
+        $result['paper_type'] = strtoupper($paperType);
+
+        // Parse remaining: {GSM_PREFIX}{GSM} E{PLYBOND} {WIDTH}
+        // GSM prefix patterns: BK, CO, MP, GB, CB, BB, BKTB, COB, DR, DRP, BKL, BPTBG, BRPG, BCB, BKN, BKP, BKE, BKTBS, BKW, NRPG, MPC, OCT, OCTN, DK, BPC, YB, DR, etc.
+        // General pattern: letters + digits (e.g., BK125, CO300, DR0250, BKL270, BPTBG325, BKTBS500, NRPG265)
+        if (preg_match('/([A-Za-z]+\d{2,4})\s+(E\d{2,3})\s+(\d+)\s*$/', $remaining, $m)) {
+            $result['gsm'] = strtoupper($m[1]);
+            $result['plybond'] = strtoupper($m[2]);
+            $result['width'] = $m[3];
+        } elseif (preg_match('/(\d+)\s+(E\d{2,3})\s+(\d+)\s*$/', $remaining, $m)) {
+            // Fallback: GSM as plain number (e.g., "300 E150 600")
+            $result['gsm'] = $m[1];
+            $result['plybond'] = strtoupper($m[2]);
+            $result['width'] = $m[3];
         }
 
         return $result;

@@ -128,9 +128,6 @@
                         <th>Width</th>
                         <th>Qty</th>
                         <th>Lokasi</th>
-                        <th>SO Des</th>
-                        <th>SO Mar</th>
-                        <th>PIC</th>
                         <th>Status</th>
                         <th style="width: 35px;"></th>
                     </tr>
@@ -156,23 +153,6 @@
                             @endif
                         </td>
                         <td>
-                            @if($item->so_desember && $item->so_desember != '-')
-                                <span class="tag tag-purple">{{ Str::limit($item->so_desember, 16) }}</span>
-                            @else
-                                <span class="text-gray-400">-</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($item->so_maret_2026 && $item->so_maret_2026 != '-')
-                                <span class="tag tag-purple">{{ Str::limit($item->so_maret_2026, 16) }}</span>
-                            @else
-                                <span class="text-gray-400">-</span>
-                            @endif
-                        </td>
-                        <td class="truncate" style="max-width: 90px;" title="{{ $item->pic_2026 }}">
-                            <span style="font-size: 0.78rem;">{{ $item->pic_2026 && $item->pic_2026 != '-' ? Str::limit($item->pic_2026, 14) : '-' }}</span>
-                        </td>
-                        <td>
                             @php
                                 $tagClass = 'tag-gray';
                                 $st = strtolower($item->status_barang ?? '');
@@ -194,7 +174,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="14" class="text-center py-10">
+                        <td colspan="11" class="text-center py-10">
                             <i class="fas fa-inbox text-2xl mb-2 block text-gray-400"></i>
                             <span class="text-gray-400">Tidak ada data</span>
                         </td>
@@ -239,15 +219,6 @@
                     <span class="font-semibold text-gray-900">{{ number_format($item->end_qty) }}</span>
                 </div>
                 <div class="flex flex-wrap gap-1.5">
-                    @if($item->so_desember && $item->so_desember != '-')
-                        <span class="tag tag-purple" style="font-size: 0.62rem;"><i class="fas fa-file mr-1"></i>Des: {{ Str::limit($item->so_desember, 12) }}</span>
-                    @endif
-                    @if($item->so_maret_2026 && $item->so_maret_2026 != '-')
-                        <span class="tag tag-purple" style="font-size: 0.62rem;"><i class="fas fa-file mr-1"></i>Mar: {{ Str::limit($item->so_maret_2026, 12) }}</span>
-                    @endif
-                    @if($item->pic_2026 && $item->pic_2026 != '-')
-                        <span class="tag tag-teal" style="font-size: 0.62rem;"><i class="fas fa-user mr-1"></i>{{ Str::limit($item->pic_2026, 12) }}</span>
-                    @endif
                     @php
                         $tagClass = 'tag-gray';
                         $st = strtolower($item->status_barang ?? '');
