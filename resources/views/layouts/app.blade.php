@@ -380,6 +380,10 @@
                     <span class="nav-icon"><i class="fas fa-box"></i></span>
                     <span class="nav-label">Roll Items</span>
                 </a>
+                <a href="{{ route('items.import') }}" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-file-import"></i></span>
+                    <span class="nav-label">Smart Sync Import</span>
+                </a>
                 <div class="px-5 mt-4 mb-2">
                     <span class="nav-label text-[10px] font-semibold uppercase tracking-wider text-white/30">Quality</span>
                 </div>

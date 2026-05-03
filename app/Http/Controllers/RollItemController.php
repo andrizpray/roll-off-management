@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Exports\RollItemsExport;
 use App\Models\RollItem;
+use App\Services\ImportSyncService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class RollItemController extends Controller
@@ -199,5 +201,68 @@ class RollItemController extends Controller
 
         ini_set('memory_limit', '512M');
         return Excel::download(new RollItemsExport($filters), $filename);
+    }
+
+    public function importForm()
+    {
+        return view('items.import');
+    }
+
+    public function importPreview(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('imports', 'local');
+        $fullPath = Storage::path($path);
+
+        try {
+            $service = new ImportSyncService();
+            $preview = $service->previewDataSheet($fullPath);
+
+            // Store path in session for sync step
+            session(['import_file_path' => $path]);
+
+            return view('items.import', [
+                'preview' => $preview,
+                'fileName' => $file->getClientOriginalName(),
+            ]);
+        } catch (\Exception $e) {
+            Storage::delete($path);
+            return redirect()->route('items.import')->with('error', 'Gagal membaca file: ' . $e->getMessage());
+        }
+    }
+
+    public function importSync(Request $request)
+    {
+        $path = session('import_file_path');
+        if (!$path || !Storage::exists($path)) {
+            return redirect()->route('items.import')->with('error', 'File tidak ditemukan. Silakan upload ulang.');
+        }
+
+        $fullPath = Storage::path($path);
+
+        try {
+            ini_set('memory_limit', '512M');
+
+            $service = new ImportSyncService();
+            $result = $service->syncDataSheet($fullPath);
+            $defectResult = $service->syncDefectSheets($fullPath);
+
+            Storage::delete($path);
+            session()->forget('import_file_path');
+
+            return redirect()->route('items.import')->with('success', implode(' | ', [
+                "DATA: {$result['created']} baru, {$result['updated']} diupdate, {$result['skipped']} skip",
+                "Defect 2025: {$defectResult['defect_2025']}",
+                "Defect 2026: {$defectResult['defect_2026']}",
+            ]));
+        } catch (\Exception $e) {
+            Storage::delete($path);
+            session()->forget('import_file_path');
+            return redirect()->route('items.import')->with('error', 'Gagal sync: ' . $e->getMessage());
+        }
     }
 }
