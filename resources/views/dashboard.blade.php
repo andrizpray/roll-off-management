@@ -1,85 +1,65 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard')
-@section('page-title', '<i class="fas fa-tachometer-alt mr-2"></i> Dashboard')
+@section('page-title', '<i class="fas fa-tachometer-alt mr-1"></i> Dashboard')
 
 @section('content')
-<!-- Page Heading -->
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-100">Dashboard Overview</h1>
-</div>
-
 <!-- Stats Row -->
 <div class="row">
-    <!-- Total Rolls -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Roll Items</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-100">{{ number_format($totalRolls) }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-boxes-stacked fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Total Defects -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-danger shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Defects</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-100">{{ number_format($totalDefects) }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Defect Rate -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Defect Rate</div>
-                        <div class="row no-gutters align-items-center">
-                            <div class="col-auto">
-                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-100">
-                                    {{ $totalRolls > 0 ? number_format(($totalDefects / $totalRolls) * 100, 2) : '0.00' }}%
-                                </div>
-                            </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <a href="{{ route('items.index') }}" class="text-decoration-none">
+            <div class="card border-left-primary shadow stat-card" style="cursor:pointer; transition: transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Roll Items</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-100">{{ number_format($totalRolls) }}</div>
                         </div>
+                        <div class="col-auto"><i class="fas fa-boxes-stacked fa-2x text-gray-500"></i></div>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <a href="{{ route('defects.index') }}" class="text-decoration-none">
+            <div class="card border-left-danger shadow stat-card" style="cursor:pointer; transition: transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div class="card-body py-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Defects</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-100">{{ number_format($totalDefects) }}</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-exclamation-triangle fa-2x text-gray-500"></i></div>
                     </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-success shadow stat-card">
+            <div class="card-body py-2">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">SO Tertracking</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-100">{{ number_format($soDesemberCount + $soMaretCount) }}</div>
+                        <div class="text-xs text-gray-500">Des: {{ number_format($soDesemberCount) }} | Mar: {{ number_format($soMaretCount) }}</div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-file-invoice fa-2x text-gray-500"></i></div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Locations -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-left-info shadow stat-card">
+            <div class="card-body py-2">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Lokasi</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-100">{{ number_format($locationStats->count()) }}</div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Receiving 2026</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-100">{{ number_format($receivingCount) }}</div>
+                        <div class="text-xs text-gray-500">{{ number_format($picCount) }} dengan PIC</div>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-warehouse fa-2x text-gray-300"></i>
-                    </div>
+                    <div class="col-auto"><i class="fas fa-warehouse fa-2x text-gray-500"></i></div>
                 </div>
             </div>
         </div>
@@ -87,93 +67,71 @@
 </div>
 
 <!-- Charts Row -->
-<div class="row">
-    <!-- Paper Type Distribution (Bar Chart) -->
-    <div class="col-xl-6 col-lg-7">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-bar mr-2"></i>Distribusi Paper Type</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="paperTypeChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Location Distribution (Doughnut) -->
-    <div class="col-xl-6 col-lg-5">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-pie mr-2"></i>Distribusi Lokasi</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-pie pt-4 pb-2">
-                    <canvas id="locationChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Second Charts Row -->
-<div class="row">
-    <!-- GSM Distribution -->
-    <div class="col-xl-6 col-lg-7">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-bar mr-2"></i>Distribusi GSM</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="gsmChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Defect by Reason -->
-    <div class="col-xl-6 col-lg-5">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-pie mr-2"></i>Defect per Alasan</h6>
-            </div>
-            <div class="card-body">
-                <div class="chart-pie pt-4 pb-2">
-                    <canvas id="defectChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Top Locations Table -->
-<div class="row">
-    <div class="col-xl-6 col-lg-6 mb-4">
+<div class="row mb-3">
+    <div class="col-xl-6 mb-3">
         <div class="card shadow">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-warehouse mr-2"></i>Top Lokasi</h6>
+            <div class="card-header py-2">
+                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 0.85rem;"><i class="fas fa-chart-bar mr-1"></i>Distribusi Paper Type</h6>
             </div>
             <div class="card-body">
+                <div class="chart-container"><canvas id="paperTypeChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header py-2">
+                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 0.85rem;"><i class="fas fa-warehouse mr-1"></i>Top Lokasi Receiving</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container"><canvas id="locationChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-xl-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header py-2">
+                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 0.85rem;"><i class="fas fa-ruler mr-1"></i>Distribusi GSM</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container"><canvas id="gsmChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header py-2">
+                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 0.85rem;"><i class="fas fa-bug mr-1"></i>Defect per Alasan</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container"><canvas id="defectChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tables Row -->
+<div class="row">
+    <div class="col-xl-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header py-2">
+                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 0.85rem;"><i class="fas fa-map-marker-alt mr-1"></i>Top Lokasi Receiving 2026</h6>
+            </div>
+            <div class="card-body p-2">
                 <div class="table-responsive">
-                    <table class="table table-bordered" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Lokasi</th>
-                                <th>Jumlah Roll</th>
-                                <th>%</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-bordered table-hover mb-0" style="font-size: 0.8rem;">
+                        <thead><tr><th>#</th><th>Lokasi</th><th>Jumlah</th><th>%</th></tr></thead>
                         <tbody>
-                            @foreach($locationStats->take(10) as $i => $loc)
-                            <tr>
+                            @foreach($locationStats as $i => $loc)
+                            <tr onclick="window.location='{{ route('items.index', ['receiving_2026' => $loc->receiving_2026]) }}'">
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $loc->location_id }}</td>
-                                <td class="font-weight-bold">{{ number_format($loc->count) }}</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
+                                <td class="font-weight-bold text-primary">{{ $loc->receiving_2026 }}</td>
+                                <td>{{ number_format($loc->count) }}</td>
+                                <td style="min-width:80px;">
+                                    <div class="progress mb-1" style="height:14px;">
                                         <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ($loc->count / $totalRolls) * 100 }}%"></div>
                                     </div>
                                     <small class="text-gray-500">{{ number_format(($loc->count / $totalRolls) * 100, 1) }}%</small>
@@ -186,24 +144,15 @@
             </div>
         </div>
     </div>
-
-    <!-- Status Breakdown -->
-    <div class="col-xl-6 col-lg-6 mb-4">
+    <div class="col-xl-6 mb-3">
         <div class="card shadow">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-tags mr-2"></i>Status Barang</h6>
+            <div class="card-header py-2">
+                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 0.85rem;"><i class="fas fa-tags mr-1"></i>Status Barang</h6>
             </div>
-            <div class="card-body">
+            <div class="card-body p-2">
                 <div class="table-responsive">
-                    <table class="table table-bordered" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Status</th>
-                                <th>Jumlah</th>
-                                <th>%</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-bordered table-hover mb-0" style="font-size: 0.8rem;">
+                        <thead><tr><th>#</th><th>Status</th><th>Jumlah</th><th>%</th></tr></thead>
                         <tbody>
                             @foreach($statusStats as $i => $s)
                             <tr>
@@ -211,15 +160,16 @@
                                 <td>
                                     @php
                                         $badgeClass = 'badge-na';
-                                        if(strtolower($s->status_barang) == 'good') $badgeClass = 'badge-good';
-                                        elseif(in_array(strtolower($s->status_barang), ['hold', 'pending'])) $badgeClass = 'badge-hold';
-                                        elseif(in_array(strtolower($s->status_barang), ['reject', 'problem', 'rusak'])) $badgeClass = 'badge-problem';
+                                        $st = strtolower($s->status_barang);
+                                        if($st == 'good') $badgeClass = 'badge-good';
+                                        elseif(in_array($st, ['hold','pending'])) $badgeClass = 'badge-hold';
+                                        elseif(in_array($st, ['reject','problem','rusak'])) $badgeClass = 'badge-problem';
                                     @endphp
                                     <span class="badge {{ $badgeClass }}">{{ $s->status_barang }}</span>
                                 </td>
                                 <td class="font-weight-bold">{{ number_format($s->count) }}</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
+                                <td style="min-width:80px;">
+                                    <div class="progress mb-1" style="height:14px;">
                                         <div class="progress-bar bg-success" role="progressbar" style="width: {{ ($s->count / $totalRolls) * 100 }}%"></div>
                                     </div>
                                     <small class="text-gray-500">{{ number_format(($s->count / $totalRolls) * 100, 1) }}%</small>
@@ -233,102 +183,50 @@
         </div>
     </div>
 </div>
-
 @endsection
 
 @push('scripts')
 <script>
-// Colors
-const colors = ['#58a6ff', '#238636', '#d29922', '#f85149', '#39d2c0', '#bc8cff', '#ff7b72', '#79c0ff', '#56d364', '#e3b341'];
-
-// Paper Type Bar Chart
-const paperCtx = document.getElementById('paperTypeChart').getContext('2d');
-new Chart(paperCtx, {
-    type: 'bar',
-    data: {
-        labels: [{!! $paperTypeStats->map(fn($p) => '"' . addslashes($p->paper_type) . '"')->join(',') !!}],
-        datasets: [{
-            label: 'Jumlah',
-            data: [{!! $paperTypeStats->pluck('count')->join(',') !!}],
-            backgroundColor: colors,
-            borderColor: colors,
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-            y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
-            x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } }
-        },
-        plugins: {
-            legend: { display: false }
-        }
+const colors = ['#58a6ff','#238636','#d29922','#f85149','#39d2c0','#bc8cff','#ff7b72','#79c0ff','#56d364','#e3b341'];
+const chartOpts = {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { display: false } },
+    scales: {
+        y: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' } },
+        x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { display: false } }
     }
+};
+const pieOpts = {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { position: 'bottom', labels: { color: '#c9d1d9', padding: 12, font: { size: 10 } } } }
+};
+
+new Chart(document.getElementById('paperTypeChart').getContext('2d'), {
+    type: 'bar', data: {
+        labels: [{!! $paperTypeStats->map(fn($p) => '"'.addslashes($p->paper_type).'"')->join(',') !!}],
+        datasets: [{ data: [{!! $paperTypeStats->pluck('count')->join(',') !!}], backgroundColor: colors, borderWidth: 0, borderRadius: 3 }]
+    }, options: chartOpts
 });
 
-// Location Doughnut Chart
-const locCtx = document.getElementById('locationChart').getContext('2d');
-const locLabels = [{!! $locationStats->take(8)->map(fn($l) => '"' . addslashes($l->location_id) . '"')->join(',') !!}];
-const locData = [{!! $locationStats->take(8)->pluck('count')->join(',') !!}];
-new Chart(locCtx, {
-    type: 'doughnut',
-    data: {
-        labels: locLabels,
-        datasets: [{ data: locData, backgroundColor: colors }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: { position: 'bottom', labels: { color: '#c9d1d9', padding: 15, font: { size: 11 } } }
-        }
-    }
+new Chart(document.getElementById('locationChart').getContext('2d'), {
+    type: 'bar', data: {
+        labels: [{!! $locationStats->take(10)->map(fn($l) => '"'.addslashes($l->receiving_2026).'"')->join(',') !!}],
+        datasets: [{ data: [{!! $locationStats->take(10)->pluck('count')->join(',') !!}], backgroundColor: '#39d2c0', borderWidth: 0, borderRadius: 3 }]
+    }, options: chartOpts
 });
 
-// GSM Bar Chart
-const gsmCtx = document.getElementById('gsmChart').getContext('2d');
-new Chart(gsmCtx, {
-    type: 'bar',
-    data: {
-        labels: [{!! $gsmStats->map(fn($g) => '"' . $g->gsm . '"')->join(',') !!}],
-        datasets: [{
-            label: 'Jumlah',
-            data: [{!! $gsmStats->pluck('count')->join(',') !!}],
-            backgroundColor: '#39d2c0',
-            borderColor: '#39d2c0',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-            y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
-            x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } }
-        },
-        plugins: { legend: { display: false } }
-    }
+new Chart(document.getElementById('gsmChart').getContext('2d'), {
+    type: 'bar', data: {
+        labels: [{!! $gsmStats->map(fn($g) => '"'.$g->gsm.'"')->join(',') !!}],
+        datasets: [{ data: [{!! $gsmStats->pluck('count')->join(',') !!}], backgroundColor: '#bc8cff', borderWidth: 0, borderRadius: 3 }]
+    }, options: chartOpts
 });
 
-// Defect Reason Doughnut
-const defCtx = document.getElementById('defectChart').getContext('2d');
-const defLabels = [{!! $defectReasonStats->map(fn($d) => '"' . addslashes($d->reason) . '"')->join(',') !!}];
-const defData = [{!! $defectReasonStats->pluck('count')->join(',') !!}];
-new Chart(defCtx, {
-    type: 'doughnut',
-    data: {
-        labels: defLabels,
-        datasets: [{ data: defData, backgroundColor: colors }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: { position: 'bottom', labels: { color: '#c9d1d9', padding: 15, font: { size: 11 } } }
-        }
-    }
+new Chart(document.getElementById('defectChart').getContext('2d'), {
+    type: 'doughnut', data: {
+        labels: [{!! $defectReasonStats->map(fn($d) => '"'.addslashes($d->reason).'"')->join(',') !!}],
+        datasets: [{ data: [{!! $defectReasonStats->pluck('count')->join(',') !!}], backgroundColor: colors }]
+    }, options: pieOpts
 });
 </script>
 @endpush
