@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DefectItem;
 use App\Models\RollItem;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -55,5 +56,11 @@ class DashboardController extends Controller
             'totalRolls', 'totalDefects', 'locationRekap', 'noLocationCount',
             'paperTypeStats', 'defectReasonStats', 'gsmStats', 'statusStats'
         ));
+    }
+
+    public function notifications()
+    {
+        $service = new NotificationService();
+        return response()->json($service->getNotifications());
     }
 }

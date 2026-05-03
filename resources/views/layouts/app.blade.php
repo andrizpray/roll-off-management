@@ -290,6 +290,10 @@
         html.dark .alert-success { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #4ade80; }
         html.dark .alert-error { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #f87171; }
 
+        /* Notifications panel */
+        html.dark #notifPanel { background: #1e293b; border-color: #334155; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        html.dark #notifPanel .bg-white { background: #1e293b !important; }
+
         /* Overlay */
         html.dark .sidebar-overlay { background: rgba(0,0,0,0.6); }
 
@@ -420,6 +424,41 @@
                         <i class="fas fa-clock"></i>
                         <span id="liveTime"></span>
                     </div>
+
+                    <!-- Notification Bell -->
+                    <div class="relative" id="notifContainer">
+                        <button onclick="toggleNotifPanel()" class="w-9 h-9 rounded-lg flex items-center justify-center transition hover:bg-gray-100 relative" title="Notifikasi">
+                            <i class="fas fa-bell text-sm text-gray-500"></i>
+                            <span id="notifBadge" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none"></span>
+                        </button>
+
+                        <!-- Notification Dropdown Panel -->
+                        <div id="notifPanel" class="hidden absolute right-0 top-12 w-80 sm:w-96 rounded-xl border border-gray-200 shadow-xl z-50 overflow-hidden">
+                            <!-- Header -->
+                            <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
+                                <h3 class="text-sm font-semibold text-gray-800">
+                                    <i class="fas fa-bell mr-1.5 text-blue-500"></i>Notifikasi
+                                </h3>
+                                <span id="notifTotalBadge" class="text-xs text-gray-400"></span>
+                            </div>
+
+                            <!-- Body -->
+                            <div id="notifBody" class="max-h-80 overflow-y-auto">
+                                <div class="p-6 text-center">
+                                    <i class="fas fa-spinner fa-spin text-gray-300 text-lg"></i>
+                                    <p class="text-xs text-gray-400 mt-2">Memuat notifikasi...</p>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div id="notifFooter" class="hidden px-4 py-2.5 border-t border-gray-100 bg-gray-50 text-center">
+                                <button onclick="loadNotif()" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                                    <i class="fas fa-arrows-rotate mr-1"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <button onclick="toggleTheme()" id="themeToggle" class="w-9 h-9 rounded-lg flex items-center justify-center transition" title="Toggle tema">
                         <i class="fas fa-moon text-sm" id="moonIcon"></i>
                         <i class="fas fa-sun text-sm" id="sunIcon"></i>
@@ -498,6 +537,180 @@
         document.querySelectorAll('.nav-item').forEach(function(item) {
             item.addEventListener('click', function() { if (window.innerWidth < 1024) toggleSidebar(); });
         });
+
+        /* ===== Notifications ===== */
+        var notifPanelOpen = false;
+        var notifLoaded = false;
+
+        function toggleNotifPanel() {
+            var panel = document.getElementById('notifPanel');
+            notifPanelOpen = !notifPanelOpen;
+            if (notifPanelOpen) {
+                panel.classList.remove('hidden');
+                if (!notifLoaded) loadNotif();
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        // Close on click outside
+        document.addEventListener('click', function(e) {
+            var container = document.getElementById('notifContainer');
+            if (notifPanelOpen && container && !container.contains(e.target)) {
+                notifPanelOpen = false;
+                document.getElementById('notifPanel').classList.add('hidden');
+            }
+        });
+
+        function loadNotif() {
+            var body = document.getElementById('notifBody');
+            var footer = document.getElementById('notifFooter');
+            body.innerHTML = '<div class="p-6 text-center"><i class="fas fa-spinner fa-spin text-gray-300 text-lg"></i><p class="text-xs text-gray-400 mt-2">Memuat notifikasi...</p></div>';
+
+            fetch('/notifications')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    renderNotif(data);
+                    notifLoaded = true;
+                })
+                .catch(function(err) {
+                    body.innerHTML = '<div class="p-6 text-center"><i class="fas fa-exclamation-triangle text-red-300 text-lg"></i><p class="text-xs text-gray-400 mt-2">Gagal memuat notifikasi</p></div>';
+                });
+        }
+
+        function renderNotif(data) {
+            var body = document.getElementById('notifBody');
+            var badge = document.getElementById('notifBadge');
+            var totalBadge = document.getElementById('notifTotalBadge');
+            var footer = document.getElementById('notifFooter');
+
+            // Badge count
+            var total = data.total_count || 0;
+            if (total > 0) {
+                badge.textContent = total > 99 ? '99+' : total;
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+            }
+            totalBadge.textContent = total + ' notifikasi';
+
+            var html = '';
+
+            // No location section
+            var nl = data.no_location;
+            if (nl && nl.count > 0) {
+                html += '<div class="px-4 py-2.5 bg-red-50 border-b border-red-100">';
+                html += '<div class="flex items-center justify-between mb-1">';
+                html += '<span class="text-xs font-semibold text-red-700"><i class="fas fa-map-pin mr-1"></i>Item Tanpa Lokasi</span>';
+                html += '<span class="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">' + nl.count + '</span>';
+                html += '</div>';
+                html += '<p class="text-[10px] text-red-500">Roll item tanpa lokasi tracking</p>';
+                html += '</div>';
+                html += buildNotifItems(nl.items, 'no_location');
+            }
+
+            // Recent defects section
+            var rd = data.recent_defects;
+            if (rd && rd.count > 0) {
+                if (nl.count > 0) html += '<div class="h-px bg-gray-100"></div>';
+                html += '<div class="px-4 py-2.5 bg-amber-50 border-b border-amber-100">';
+                html += '<div class="flex items-center justify-between mb-1">';
+                html += '<span class="text-xs font-semibold text-amber-700"><i class="fas fa-triangle-exclamation mr-1"></i>Defect Baru (7 hari)</span>';
+                html += '<span class="text-[10px] font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full">' + rd.count + '</span>';
+                html += '</div>';
+                html += '<p class="text-[10px] text-amber-500">Barang bermasalah baru ditambahkan</p>';
+                html += '</div>';
+                html += buildNotifItems(rd.items, 'recent_defects');
+            }
+
+            // Empty state
+            if (total === 0) {
+                html = '<div class="p-8 text-center">';
+                html += '<i class="fas fa-bell-slash text-2xl text-gray-200 mb-2"></i>';
+                html += '<p class="text-xs text-gray-400 font-medium">Semua aman!</p>';
+                html += '<p class="text-[10px] text-gray-300 mt-0.5">Tidak ada notifikasi baru</p>';
+                html += '</div>';
+            }
+
+            body.innerHTML = html;
+            footer.classList.remove('hidden');
+        }
+
+        function buildNotifItems(items, type) {
+            var html = '';
+            if (!items || items.length === 0) return html;
+
+            items.forEach(function(item) {
+                html += '<a href="';
+                if (type === 'no_location') {
+                    html += '/items/' + item.id;
+                } else {
+                    html += '/defects';
+                }
+                html += '" class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition border-b border-gray-50 text-decoration-none">';
+                html += '<div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ';
+                if (type === 'no_location') {
+                    html += 'bg-red-100"><i class="fas fa-map-pin text-red-400 text-xs"></i>';
+                } else {
+                    html += 'bg-amber-100"><i class="fas fa-triangle-exclamation text-amber-400 text-xs"></i>';
+                }
+                html += '</div>';
+                html += '<div class="flex-1 min-w-0">';
+                html += '<p class="text-xs font-medium text-gray-800 truncate">' + item.lot_id;
+                if (item.paper_type) html += ' · ' + item.paper_type;
+                html += '</p>';
+                if (type === 'no_location') {
+                    html += '<p class="text-[10px] text-gray-400 truncate">';
+                    if (item.gsm) html += item.gsm;
+                    if (item.width) html += (item.gsm ? ' · ' : '') + item.width + 'mm';
+                    if (!item.gsm && !item.width) html += 'Belum ada lokasi tracking';
+                    html += '</p>';
+                } else {
+                    html += '<p class="text-[10px] text-gray-400 truncate">';
+                    if (item.reason) html += item.reason;
+                    else html += item.gsm || '-';
+                    html += '</p>';
+                }
+                html += '</div>';
+                html += '<span class="text-[10px] text-gray-300 flex-shrink-0">' + formatNotifDate(item.created_at) + '</span>';
+                html += '</a>';
+            });
+
+            return html;
+        }
+
+        function formatNotifDate(dateStr) {
+            var d = new Date(dateStr);
+            var now = new Date();
+            var diff = now - d;
+            var mins = Math.floor(diff / 60000);
+            var hours = Math.floor(diff / 3600000);
+            var days = Math.floor(diff / 86400000);
+            if (mins < 1) return 'Baru';
+            if (mins < 60) return mins + 'm';
+            if (hours < 24) return hours + 'j';
+            if (days < 7) return days + 'h';
+            return d.getDate() + '/' + (d.getMonth() + 1);
+        }
+
+        // Auto-load badge count on page load
+        fetch('/notifications')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var badge = document.getElementById('notifBadge');
+                var total = data.total_count || 0;
+                if (total > 0) {
+                    badge.textContent = total > 99 ? '99+' : total;
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                }
+                notifLoaded = true;
+                // Pre-render body so it's ready when panel opens
+                renderNotif(data);
+            })
+            .catch(function() {});
     </script>
     @stack('scripts')
 </body>
