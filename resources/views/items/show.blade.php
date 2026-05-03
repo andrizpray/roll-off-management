@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Detail ' . $item->lot_id)
-@section('page-title', '<i class="fas fa-box mr-2 opacity-60"></i>Detail Roll')
+@section('page-title')
+<i class="fas fa-box mr-2 opacity-60"></i>Detail Roll
+@endsection
 
 @section('content')
 <div class="animate-in space-y-4">

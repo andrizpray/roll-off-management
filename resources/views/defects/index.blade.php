@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Barang Bermasalah')
-@section('page-title', '<i class="fas fa-triangle-exclamation mr-2 opacity-60"></i>Barang Bermasalah')
+@section('page-title')
+<i class="fas fa-triangle-exclamation mr-2 opacity-60"></i>Barang Bermasalah
+@endsection
 
 @section('content')
 <div class="animate-in space-y-4">

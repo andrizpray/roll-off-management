@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Roll Items')
-@section('page-title', '<i class="fas fa-box mr-2 opacity-60"></i>Roll Items')
+@section('page-title')
+<i class="fas fa-box mr-2 opacity-60"></i>Roll Items
+@endsection
 
 @section('content')
 <div class="animate-in space-y-4">

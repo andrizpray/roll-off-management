@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard')
-@section('page-title', '<i class="fas fa-chart-pie mr-2 opacity-60"></i>Dashboard')
+@section('page-title')
+<i class="fas fa-chart-pie mr-2 opacity-60"></i>Dashboard
+@endsection
 
 @section('content')
 <div class="animate-in space-y-5">
