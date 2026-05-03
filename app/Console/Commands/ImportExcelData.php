@@ -161,6 +161,28 @@ class ImportExcelData extends Command
 
             if (!empty($batch)) {
                 foreach ($batch as $item) {
+                    // Fill missing rew_id and spec from roll_items via lot_id
+                    $roll = RollItem::where('lot_id', $item['lot_id'])->first();
+                    if ($roll) {
+                        if (empty($item['rew_id']) && $roll->rew_id) {
+                            $item['rew_id'] = $roll->rew_id;
+                        }
+                        if (empty($item['paper_type']) && $roll->paper_type) {
+                            $item['paper_type'] = $roll->paper_type;
+                        }
+                        if (empty($item['gsm']) && $roll->gsm) {
+                            $item['gsm'] = $roll->gsm;
+                        }
+                        if (empty($item['plybond']) && $roll->plybond) {
+                            $item['plybond'] = $roll->plybond;
+                        }
+                        if (empty($item['width']) && $roll->width) {
+                            $item['width'] = $roll->width;
+                        }
+                        if ((empty($item['keterangan']) || $item['keterangan'] === '-') && $roll->comments && $roll->comments !== '-') {
+                            $item['keterangan'] = $roll->comments;
+                        }
+                    }
                     DefectItem::create($item);
                 }
             }
@@ -213,10 +235,13 @@ class ImportExcelData extends Command
 
             if (!empty($batch)) {
                 foreach ($batch as $item) {
-                    // Fill missing spec from roll_items via lot_id
-                    if (empty($item['paper_type']) || empty($item['gsm'])) {
+                    // Fill missing rew_id and spec from roll_items via lot_id
+                    if (empty($item['rew_id']) || empty($item['paper_type']) || empty($item['gsm'])) {
                         $roll = RollItem::where('lot_id', $item['lot_id'])->first();
                         if ($roll) {
+                            if (empty($item['rew_id']) && $roll->rew_id) {
+                                $item['rew_id'] = $roll->rew_id;
+                            }
                             if (empty($item['paper_type']) && $roll->paper_type) {
                                 $item['paper_type'] = $roll->paper_type;
                             }
