@@ -17,13 +17,13 @@
     <div class="card p-5">
         <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div>
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fas fa-barcode text-sm" class="text-blue-500"></i>
+                <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-barcode text-sm text-blue-500"></i>
                     {{ $item->lot_id }}
-                    @if($item->item_id) <span class="text-sm font-normal" class="text-gray-400">Item: {{ $item->item_id }}</span> @endif
+                    @if($item->item_id) <span class="text-sm font-normal text-gray-400">Item: {{ $item->item_id }}</span> @endif
                 </h2>
                 @if($item->description)
-                    <p class="text-sm mt-1" class="text-gray-500">{{ $item->description }}</p>
+                    <p class="text-sm mt-1 text-gray-500">{{ $item->description }}</p>
                 @endif
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -59,53 +59,53 @@
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-scroll mr-1"></i>Paper Type</div>
-                <div class="text-sm font-semibold text-white">{{ $item->paper_type ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->paper_type ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-ruler mr-1"></i>GSM</div>
-                <div class="text-sm font-semibold text-white">{{ $item->gsm ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->gsm ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-layer-group mr-1"></i>Plybond</div>
-                <div class="text-sm font-semibold text-white">{{ $item->plybond ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->plybond ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-arrows-left-right mr-1"></i>Width</div>
-                <div class="text-sm font-semibold text-white">{{ $item->width ? $item->width . ' MM' : '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->width ? $item->width . ' MM' : '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-sync mr-1"></i>Rew ID</div>
-                <div class="text-sm font-semibold text-white">{{ $item->rew_id ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->rew_id ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-circle mr-1"></i>Diameter</div>
-                <div class="text-sm font-semibold text-white">{{ $item->diameter ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->diameter ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-arrows-up-down mr-1"></i>Thickness</div>
-                <div class="text-sm font-semibold text-white">{{ $item->thickness ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->thickness ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-star mr-1"></i>Grade</div>
-                <div class="text-sm font-semibold text-white">{{ $item->grade ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->grade ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-calendar mr-1"></i>Tanggal</div>
-                <div class="text-sm font-semibold text-white">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</div>
             </div>
         </div>
 
         @if($item->comments)
-            <div class="mt-4 p-3 rounded-xl text-sm" style="background: rgba(30,41,59,0.5); border: 1px solid rgba(255,255,255,0.04);">
+            <div class="mt-4 p-3 rounded-xl text-sm bg-gray-50 border border-gray-200">
                 <span class="text-gray-400"><i class="fas fa-sticky-note mr-1"></i>Comments:</span>
-                <span class="text-gray-600">{{ $item->comments }}</span>
+                <span class="text-gray-700">{{ $item->comments }}</span>
             </div>
         @endif
     </div>
 
     <!-- Location Timeline -->
     <div class="card p-5">
-        <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <i class="fas fa-route text-xs" class="text-blue-500"></i>
             Tracking Lokasi & SO
         </h3>
@@ -113,13 +113,13 @@
             @if($item->so_september && $item->so_september != '-')
             <div class="timeline-item">
                 <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">SO September 2025</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_september }}</div>
+                <div class="text-sm font-semibold text-gray-900 mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_september }}</div>
             </div>
             @endif
             @if($item->so_desember && $item->so_desember != '-')
             <div class="timeline-item filled">
                 <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">SO Desember 2025</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_desember }}</div>
+                <div class="text-sm font-semibold text-gray-900 mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_desember }}</div>
                 @if($item->pic_2025 && $item->pic_2025 != '-')
                     <div class="text-xs mt-1" class="text-gray-500"><i class="fas fa-user mr-1"></i>PIC: {{ $item->pic_2025 }}</div>
                 @endif
@@ -128,31 +128,31 @@
             @if($item->lokasi_receiving && $item->lokasi_receiving != '-')
             <div class="timeline-item">
                 <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">Lokasi Receiving</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-map-marker-alt mr-1.5" class="text-blue-500"></i>{{ $item->lokasi_receiving }}</div>
+                <div class="text-sm font-semibold text-gray-900 mt-0.5"><i class="fas fa-map-marker-alt mr-1.5" class="text-blue-500"></i>{{ $item->lokasi_receiving }}</div>
             </div>
             @endif
             @if($item->receiving_2026 && $item->receiving_2026 != '-')
             <div class="timeline-item filled">
                 <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">Receiving 2026</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-warehouse mr-1.5" class="text-blue-500"></i>{{ $item->receiving_2026 }}</div>
+                <div class="text-sm font-semibold text-gray-900 mt-0.5"><i class="fas fa-warehouse mr-1.5" class="text-blue-500"></i>{{ $item->receiving_2026 }}</div>
             </div>
             @endif
             @if($item->pic_2026 && $item->pic_2026 != '-')
             <div class="timeline-item">
                 <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">PIC 2026</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-user mr-1.5" style="color: #2dd4bf;"></i>{{ $item->pic_2026 }}</div>
+                <div class="text-sm font-semibold text-gray-900 mt-0.5"><i class="fas fa-user mr-1.5" style="color: #2dd4bf;"></i>{{ $item->pic_2026 }}</div>
             </div>
             @endif
             @if($item->rcv_cnv_2026 && $item->rcv_cnv_2026 != '-')
             <div class="timeline-item">
                 <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">RCV/CNV 2026</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-right-left mr-1.5" style="color: #facc15;"></i>{{ $item->rcv_cnv_2026 }}</div>
+                <div class="text-sm font-semibold text-gray-900 mt-0.5"><i class="fas fa-right-left mr-1.5" style="color: #facc15;"></i>{{ $item->rcv_cnv_2026 }}</div>
             </div>
             @endif
             @if($item->so_maret_2026 && $item->so_maret_2026 != '-')
             <div class="timeline-item filled">
                 <div class="text-[10px] font-semibold uppercase tracking-wide" class="text-gray-400">SO Maret 2026</div>
-                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_maret_2026 }}</div>
+                <div class="text-sm font-semibold text-gray-900 mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_maret_2026 }}</div>
             </div>
             @endif
             @if(!$item->current_location)
@@ -215,7 +215,7 @@
                 @if($def->keterangan)
                 <div class="flex justify-between text-xs mt-1.5">
                     <span class="text-gray-400">Ket</span>
-                    <span class="truncate text-right" style="color: #c9d1d9; max-width: 60%;">{{ Str::limit($def->keterangan, 40) }}</span>
+                    <span class="truncate text-right text-gray-600" style="max-width: 60%;">{{ Str::limit($def->keterangan, 40) }}</span>
                 </div>
                 @endif
             </div>
