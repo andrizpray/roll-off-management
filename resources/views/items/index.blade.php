@@ -98,7 +98,12 @@
     <!-- Result info -->
     <div class="flex items-center justify-between text-xs" class="text-gray-400">
         <span><i class="fas fa-list mr-1"></i>{{ number_format($items->total()) }} items</span>
-        <span class="hidden sm:inline">Hal. {{ $items->currentPage() }}/{{ $items->lastPage() }}</span>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('items.export', request()->except('page')) }}" class="btn btn-primary flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem;">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+            <span class="hidden sm:inline">Hal. {{ $items->currentPage() }}/{{ $items->lastPage() }}</span>
+        </div>
     </div>
 
     <!-- DESKTOP TABLE -->

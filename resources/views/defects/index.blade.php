@@ -159,7 +159,46 @@
     <!-- Result info -->
     <div class="flex items-center justify-between text-xs text-gray-400">
         <span><i class="fas fa-list mr-1"></i>{{ number_format($defects->total()) }} items</span>
-        <span class="hidden sm:inline">Hal. {{ $defects->currentPage() }}/{{ $defects->lastPage() }}</span>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('defects.export', request()->except('page')) }}" class="btn btn-primary flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem;">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+            <a href="#" onclick="openSummaryModal()" class="btn flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem; background: #7c3aed; color: #fff; border-radius: 8px;">
+                <i class="fas fa-chart-pie"></i> Summary Report
+            </a>
+            <span class="hidden sm:inline">Hal. {{ $defects->currentPage() }}/{{ $defects->lastPage() }}</span>
+        </div>
+    </div>
+
+    <!-- Summary Report Modal -->
+    <div id="summaryModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6" style="border: 1px solid #e2e8f0;">
+            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-pie text-purple-500"></i> Summary Report
+            </h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Tahun</label>
+                    <select id="summaryYear" class="select-field w-full">
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Bulan (opsional)</label>
+                    <select id="summaryMonth" class="select-field w-full">
+                        <option value="">Semua Bulan</option>
+                        @foreach($months as $m)<option value="{{ $m }}">{{ $m }}</option>@endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-5">
+                <button onclick="downloadSummary()" class="btn btn-primary flex-1 flex items-center justify-center gap-1.5">
+                    <i class="fas fa-download"></i> Download
+                </button>
+                <button onclick="closeSummaryModal()" class="btn btn-ghost flex-1">Batal</button>
+            </div>
+        </div>
     </div>
 
     <!-- DESKTOP TABLE -->
@@ -343,3 +382,24 @@ new Chart(document.getElementById('paperDefectChart'), {
 });
 </script>
 @endpush
+
+<script>
+function openSummaryModal() {
+    document.getElementById('summaryModal').style.display = 'flex';
+}
+function closeSummaryModal() {
+    document.getElementById('summaryModal').style.display = 'none';
+}
+function downloadSummary() {
+    const year = document.getElementById('summaryYear').value;
+    const month = document.getElementById('summaryMonth').value;
+    let url = '{{ route("defects.summary") }}?year=' + year;
+    if (month) url += '&month=' + encodeURIComponent(month);
+    window.location.href = url;
+    closeSummaryModal();
+}
+document.getElementById('summaryModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSummaryModal();
+});
+</script>
+@endsection

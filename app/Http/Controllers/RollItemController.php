@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RollItemsExport;
 use App\Models\RollItem;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RollItemController extends Controller
 {
@@ -94,5 +96,14 @@ class RollItemController extends Controller
         $item = RollItem::findOrFail($id);
         $defects = \App\Models\DefectItem::where('lot_id', $item->lot_id)->get();
         return view('items.show', compact('item', 'defects'));
+    }
+
+    public function export(Request $request)
+    {
+        $filters = $request->only(['search', 'paper_type', 'gsm', 'width', 'receiving_2026', 'status', 'sort', 'dir']);
+        $filename = 'roll-items-' . date('Y-m-d') . '.xlsx';
+
+        ini_set('memory_limit', '512M');
+        return Excel::download(new RollItemsExport($filters), $filename);
     }
 }

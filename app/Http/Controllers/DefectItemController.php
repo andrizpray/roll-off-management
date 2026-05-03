@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DefectItemsExport;
+use App\Exports\SummaryReportExport;
 use App\Models\DefectItem;
 use App\Models\RollItem;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DefectItemController extends Controller
 {
@@ -101,5 +104,24 @@ class DefectItemController extends Controller
             'totalDefects', 'defect2025', 'defect2026', 'defectRate',
             'defectByPaper', 'rollByPaper', 'defectTrend', 'topReasons'
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $filters = $request->only(['year', 'search', 'reason', 'paper_type', 'month']);
+        $filename = 'defect-items-' . date('Y-m-d') . '.xlsx';
+
+        ini_set('memory_limit', '512M');
+        return Excel::download(new DefectItemsExport($filters), $filename);
+    }
+
+    public function summaryReport(Request $request)
+    {
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month', '');
+        $filename = 'summary-report-' . $year . ($month ? '-' . $month : '') . '.xlsx';
+
+        ini_set('memory_limit', '512M');
+        return Excel::download(new SummaryReportExport($year, $month), $filename);
     }
 }
