@@ -1,32 +1,31 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Roll Off Management')</title>
 
-    <!-- Font Awesome -->
-    <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-    <!-- SB Admin 2 CSS -->
-    <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Chart.js -->
-    <script src="{{ asset('vendor/chart.js/Chart.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <!-- Tailwind CSS CDN (preflight disabled to coexist with Bootstrap sidebar) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            prefix: 'tw-',
-            corePlugins: { preflight: false },
+            darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
                     colors: {
-                        dark: { 900: '#0d1117', 800: '#161b22', 700: '#1c2128', 600: '#21262d', 500: '#30363d' },
-                        txt: { primary: '#f0f6fc', secondary: '#c9d1d9', muted: '#8b949e', dim: '#484f58' },
-                        accent: { blue: '#58a6ff', green: '#238636', teal: '#39d2c0', yellow: '#d29922', red: '#f85149', purple: '#bc8cff', orange: '#ff7b72' }
+                        surface: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 700: '#1e293b', 800: '#161b22', 850: '#131920', 900: '#0d1117', 950: '#090c10' },
+                        brand: { 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb' },
                     }
                 }
             }
@@ -34,244 +33,302 @@
     </script>
 
     <style>
-        /* ===== SB ADMIN 2 DARK THEME ===== */
-        :root {
-            --bg-primary: #0d1117; --bg-card: #161b22; --bg-card-header: #1c2128; --bg-input: #0d1117;
-            --border: #30363d; --text-primary: #f0f6fc; --text-secondary: #c9d1d9; --text-muted: #8b949e; --text-dim: #484f58;
-            --accent-blue: #58a6ff; --accent-green: #238636; --accent-teal: #39d2c0;
-            --accent-yellow: #d29922; --accent-red: #f85149; --accent-purple: #bc8cff;
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #0d1117; color: #e6edf3; }
+
+        /* Sidebar transition */
+        .sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        @media (min-width: 1024px) {
+            .sidebar.collapsed { transform: translateX(0); width: 72px; }
+            .sidebar.collapsed .nav-label, .sidebar.collapsed .sidebar-title, .sidebar.collapsed .sidebar-subtitle { display: none; }
+            .sidebar.collapsed .nav-item { justify-content: center; padding-left: 0; padding-right: 0; }
+            .sidebar.collapsed .nav-icon { margin-right: 0; }
         }
-        body { background: var(--bg-primary); color: var(--text-secondary); font-family: 'Nunito', sans-serif; }
-        #content-wrapper { background: var(--bg-primary); }
-        .card { background: var(--bg-card) !important; border: 1px solid var(--border) !important; border-radius: 10px !important; overflow: hidden; }
-        .card-header { background: var(--bg-card-header) !important; border-bottom: 1px solid var(--border) !important; }
-        .card-body { background: var(--bg-card) !important; }
 
-        /* SB Admin text overrides */
-        .text-gray-100, .text-gray-800, .text-gray-900 { color: var(--text-primary) !important; }
-        .text-gray-600, .text-gray-500, .text-gray-400 { color: var(--text-muted) !important; }
-        .text-gray-300 { color: var(--text-secondary) !important; }
-        .text-primary { color: var(--accent-blue) !important; }
-        .text-success { color: var(--accent-green) !important; }
-        .text-info { color: var(--accent-teal) !important; }
-        .text-warning { color: var(--accent-yellow) !important; }
-        .text-danger { color: var(--accent-red) !important; }
-
-        /* Topbar / Footer */
-        .topbar { background: var(--bg-card) !important; border-bottom: 1px solid var(--border) !important; }
-        footer.sticky-footer { background: var(--bg-card) !important; border-top: 1px solid var(--border); }
-        .sidebar .nav-link { color: rgba(255,255,255,0.75); transition: all 0.2s; }
-        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
-        .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.12); }
-        .sidebar-heading { color: rgba(255,255,255,0.4); }
-
-        /* Tables */
-        .table-bordered { border-color: var(--border) !important; }
-        .table-bordered td, .table-bordered th { border-color: var(--border) !important; }
-        .table thead th { background: var(--bg-card-header); color: var(--text-muted); border-bottom: 2px solid var(--border) !important; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 6px; }
-        .table td { color: var(--text-secondary); border-top: 1px solid #21262d; vertical-align: middle; font-size: 0.8rem; }
-        .table-hover tbody tr { transition: background 0.15s; cursor: pointer; }
-        .table-hover tbody tr:hover { background: var(--bg-card-header); }
-
-        /* Forms */
-        .form-control, .custom-select, .form-control-sm {
-            background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border);
-            border-radius: 8px; font-size: 0.82rem; transition: border-color 0.2s, box-shadow 0.2s;
+        /* Nav item */
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px; border-radius: 10px; margin: 2px 8px;
+            color: rgba(255,255,255,0.55); font-size: 0.85rem; font-weight: 500;
+            transition: all 0.2s ease; cursor: pointer; text-decoration: none;
         }
-        .form-control:focus, .custom-select:focus {
-            background: var(--bg-input); color: var(--text-secondary);
-            border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(88,166,255,0.12);
-        }
-        .form-control::placeholder { color: var(--text-dim); }
-        .form-group label, label { color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-item:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.06); }
+        .nav-item.active { color: #fff; background: rgba(59,130,246,0.15); }
+        .nav-item.active .nav-icon { color: #60a5fa; }
+        .nav-icon { width: 20px; text-align: center; font-size: 0.95rem; flex-shrink: 0; }
 
-        /* Buttons */
-        .btn-primary { background: var(--accent-green); border-color: var(--accent-green); }
-        .btn-primary:hover { background: #2ea043; }
-        .btn-outline-primary { color: var(--accent-blue); border-color: var(--border); }
-        .btn-outline-primary:hover { background: var(--bg-card-header); border-color: var(--accent-blue); }
-        .btn-outline-secondary { color: var(--text-muted); border-color: var(--border); }
-        .btn-outline-secondary:hover { background: var(--bg-card-header); }
+        /* Glass card */
+        .glass {
+            background: rgba(22, 27, 34, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+        }
+
+        /* Stat card glow */
+        .stat-card { position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            border-radius: 14px 14px 0 0;
+        }
+        .stat-card.blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .stat-card.red::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .stat-card.green::before { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .stat-card.teal::before { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+        .stat-card.purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+        /* Modern table */
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .data-table thead th {
+            background: rgba(30, 41, 59, 0.8); color: #8b949e;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: sticky; top: 0; z-index: 2;
+        }
+        .data-table thead th:first-child { border-radius: 10px 0 0 0; }
+        .data-table thead th:last-child { border-radius: 0 10px 0 0; }
+        .data-table tbody tr {
+            transition: background 0.15s ease; cursor: pointer;
+        }
+        .data-table tbody tr:hover { background: rgba(59, 130, 246, 0.04); }
+        .data-table tbody td {
+            padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.82rem; color: #c9d1d9; vertical-align: middle;
+        }
+
+        /* Mobile card */
+        .mobile-card {
+            background: rgba(22, 27, 34, 0.8);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 14px; margin-bottom: 8px;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+        .mobile-card:hover { border-color: rgba(59, 130, 246, 0.3); transform: translateY(-1px); }
+
+        /* Badge */
+        .tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 0.7rem; font-weight: 600; padding: 3px 8px;
+            border-radius: 6px; white-space: nowrap;
+        }
+        .tag-blue { background: rgba(59,130,246,0.12); color: #60a5fa; }
+        .tag-green { background: rgba(34,197,94,0.12); color: #4ade80; }
+        .tag-red { background: rgba(239,68,68,0.12); color: #f87171; }
+        .tag-yellow { background: rgba(234,179,8,0.12); color: #facc15; }
+        .tag-purple { background: rgba(139,92,246,0.12); color: #a78bfa; }
+        .tag-gray { background: rgba(148,163,184,0.1); color: #94a3b8; }
+        .tag-teal { background: rgba(20,184,166,0.12); color: #2dd4bf; }
+
+        /* Input */
+        .input-field {
+            background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 8px 14px; color: #e6edf3; font-size: 0.84rem;
+            transition: border-color 0.2s, box-shadow 0.2s; outline: none; width: 100%;
+        }
+        .input-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+        .input-field::placeholder { color: #484f58; }
+
+        /* Select */
+        .select-field {
+            background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 8px 14px; color: #e6edf3; font-size: 0.84rem;
+            transition: border-color 0.2s; outline: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+        }
+        .select-field:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
 
         /* Pagination */
-        .page-link { background: var(--bg-card); color: var(--accent-blue); border: 1px solid var(--border); border-radius: 6px; margin: 0 2px; }
-        .page-link:hover { background: var(--bg-card-header); }
-        .page-item.active .page-link { background: var(--accent-green); border-color: var(--accent-green); }
-        .page-item.disabled .page-link { color: var(--text-dim); }
+        .page-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 34px; height: 34px; padding: 0 8px;
+            border-radius: 8px; font-size: 0.8rem; font-weight: 500;
+            color: #8b949e; background: transparent; border: 1px solid transparent;
+            transition: all 0.2s; cursor: pointer; text-decoration: none;
+        }
+        .page-btn:hover { color: #e6edf3; background: rgba(255,255,255,0.06); }
+        .page-btn.active { color: #fff; background: #3b82f6; border-color: #3b82f6; }
+        .page-btn.disabled { color: #30363d; cursor: not-allowed; }
 
-        /* Border-left cards */
-        .border-left-primary { border-left: 0.25rem solid var(--accent-blue) !important; }
-        .border-left-success { border-left: 0.25rem solid var(--accent-green) !important; }
-        .border-left-info { border-left: 0.25rem solid var(--accent-teal) !important; }
-        .border-left-warning { border-left: 0.25rem solid var(--accent-yellow) !important; }
-        .border-left-danger { border-left: 0.25rem solid var(--accent-red) !important; }
-        .bg-light { background: var(--bg-card-header) !important; }
-        .shadow { box-shadow: 0 2px 12px rgba(0,0,0,0.25) !important; }
+        /* Timeline */
+        .timeline { position: relative; padding-left: 28px; }
+        .timeline::before { content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: rgba(255,255,255,0.06); border-radius: 1px; }
+        .timeline-item { position: relative; padding: 8px 0; }
+        .timeline-item::before { content: ''; position: absolute; left: -24px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; border: 2px solid #0d1117; }
+        .timeline-item.filled::before { background: #22c55e; }
 
-        /* Badges */
-        .badge { font-size: 0.68rem; padding: 3px 8px; border-radius: 5px; font-weight: 600; }
-        .badge-good { background: var(--accent-green); color: #fff; }
-        .badge-hold { background: var(--accent-yellow); color: #000; }
-        .badge-problem { background: var(--accent-red); color: #fff; }
-        .badge-na { background: #484f58; color: #fff; }
-        .badge-loc { background: rgba(88,166,255,0.12); color: var(--accent-blue); border: 1px solid rgba(88,166,255,0.25); }
-        .badge-so { background: rgba(188,140,255,0.12); color: var(--accent-purple); border: 1px solid rgba(188,140,255,0.25); }
-
-        /* ===== MOBILE RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .container-fluid { padding: 0 8px !important; }
-            .card-body { padding: 10px !important; }
+        /* Info cell */
+        .info-box {
+            background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px; padding: 12px 14px;
         }
 
-        /* Mobile card view */
-        .mobile-cards { display: none; }
-        .desktop-table { display: block; }
-        @media (max-width: 768px) {
-            .desktop-table { display: none; }
-            .mobile-cards { display: block; }
+        /* Button */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 10px; font-size: 0.84rem; font-weight: 500;
+            transition: all 0.2s; cursor: pointer; border: none; text-decoration: none;
         }
-        .mobile-item-card {
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
-            padding: 14px; margin-bottom: 8px; transition: border-color 0.2s;
+        .btn-primary { background: #3b82f6; color: #fff; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-ghost { background: transparent; color: #8b949e; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-ghost:hover { color: #e6edf3; background: rgba(255,255,255,0.06); }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
-        .mobile-item-card:hover { border-color: var(--accent-blue); }
-        .mobile-item-card .lot-id { color: var(--accent-blue); font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; display: block; }
-        .mobile-item-card .info-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 0.78rem; }
-        .mobile-item-card .info-label { color: var(--text-muted); }
-        .mobile-item-card .info-value { color: var(--text-secondary); font-weight: 600; text-align: right; max-width: 65%; }
-        .mobile-item-card .loc-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-        .mobile-item-card .loc-tag { font-size: 0.62rem; padding: 2px 6px; border-radius: 5px; background: rgba(88,166,255,0.1); color: var(--accent-blue); border: 1px solid rgba(88,166,255,0.2); }
-        @media (max-width: 768px) {
-            .filter-row .col-lg-3, .filter-row .col-lg-2, .filter-row .col-md-6, .filter-row .col-md-4 {
-                width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; margin-bottom: 6px !important;
-            }
-        }
-
-        /* Quick search */
-        .quick-search { background: var(--bg-card-header); border-bottom: 1px solid var(--border); padding: 10px 16px; }
-        .quick-search input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; }
-        .quick-search input:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(88,166,255,0.12); }
-        .quick-search input::placeholder { color: var(--text-dim); }
-
-        /* Info grid (detail page) */
-        .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-        @media (max-width: 768px) { .info-grid { grid-template-columns: 1fr 1fr; } }
-        .info-cell { background: var(--bg-card-header); border-radius: 8px; padding: 12px; border: 1px solid var(--border); }
-        .info-cell .info-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .info-cell .info-value { font-size: 0.9rem; color: var(--text-primary); font-weight: 600; }
-
-        /* Location timeline */
-        .loc-timeline { position: relative; padding-left: 24px; }
-        .loc-timeline::before { content: ''; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: var(--border); border-radius: 1px; }
-        .loc-timeline-item { position: relative; padding: 6px 0 6px 24px; }
-        .loc-timeline-item::before { content: ''; position: absolute; left: -21px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue); border: 2px solid var(--bg-card); }
-        .loc-timeline-item .loc-period { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
-        .loc-timeline-item .loc-value { font-size: 0.88rem; color: var(--text-primary); font-weight: 600; margin-top: 2px; }
-
-        /* Chart containers */
-        .chart-container { position: relative; width: 100%; }
-        .chart-container canvas { max-height: 220px; }
-        @media (max-width: 768px) { .chart-container canvas { max-height: 180px; } }
-
-        /* Alerts */
-        .alert-success { background: rgba(35,134,54,0.12); border-color: rgba(35,134,54,0.25); color: #56d364; }
-        .alert-danger { background: rgba(248,81,73,0.12); border-color: rgba(248,81,73,0.25); color: var(--accent-red); }
+        .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
 
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 0.4s ease-out; }
+
+        /* Truncate */
         .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
     @stack('styles')
 </head>
-<body id="page-top">
+<body class="antialiased">
 
-    <div id="wrapper">
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay lg:hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="flex min-h-screen">
 
         <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('dashboard') }}">
-                <div class="sidebar-brand-icon"><i class="fas fa-boxes-stacked"></i></div>
-                <div class="sidebar-brand-text mx-3">Roll Off</div>
+        <aside class="sidebar fixed lg:sticky top-0 left-0 h-screen w-64 z-50 flex flex-col collapsed lg:transform-none"
+               id="sidebar"
+               style="background: linear-gradient(180deg, #111827 0%, #0d1117 100%); border-right: 1px solid rgba(255,255,255,0.06);">
+            
+            <!-- Brand -->
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-5 py-5 no-underline">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                     style="background: linear-gradient(135deg, #3b82f6, #8b5cf6);">
+                    <i class="fas fa-boxes-stacked text-white text-sm"></i>
+                </div>
+                <div class="sidebar-title">
+                    <div class="text-white font-bold text-sm leading-tight">Roll Off</div>
+                    <div class="sidebar-subtitle text-xs" style="color: #484f58;">Management</div>
+                </div>
             </a>
-            <hr class="sidebar-divider my-0">
-            <li class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('dashboard') }}"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a>
-            </li>
-            <hr class="sidebar-divider">
-            <div class="sidebar-heading">Inventory</div>
-            <li class="nav-item {{ request()->routeIs('items.*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('items.index') }}"><i class="fas fa-fw fa-box"></i><span>Roll Items</span></a>
-            </li>
-            <hr class="sidebar-divider">
-            <div class="sidebar-heading">Quality</div>
-            <li class="nav-item {{ request()->routeIs('defects.*') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('defects.index') }}"><i class="fas fa-fw fa-exclamation-triangle"></i><span>Barang Bermasalah</span></a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-        </ul>
 
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
-            <div id="content">
+            <div class="px-5 mb-2"><div style="height: 1px; background: rgba(255,255,255,0.06);"></div></div>
 
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light topbar static-top shadow-sm">
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars" style="color: var(--text-muted)"></i>
-                    </button>
-                    <h6 class="mb-0 d-none d-sm-block" style="color: var(--text-muted); font-weight: 600; font-size: 0.85rem;">
-                        @yield('page-title', 'Dashboard')
-                    </h6>
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item d-none d-sm-block">
-                            <span class="nav-link" style="color: var(--text-dim); font-size: 0.78rem;">
-                                <i class="fas fa-database mr-1"></i>{{ number_format(\App\Models\RollItem::count()) }} rolls
-                            </span>
-                        </li>
-                    </ul>
-                </nav>
+            <!-- Nav -->
+            <nav class="flex-1 overflow-y-auto py-1">
+                <div class="px-5 mb-2">
+                    <span class="nav-label text-[10px] font-semibold uppercase tracking-wider" style="color: #30363d;">Menu</span>
+                </div>
+                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+                    <span class="nav-label">Dashboard</span>
+                </a>
 
-                <!-- Page Content -->
-                <div class="container-fluid tw-pb-6">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                        </div>
-                    @endif
-                    @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ session('error') }}
-                            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                        </div>
-                    @endif
-                    @yield('content')
+                <div class="px-5 mt-4 mb-2">
+                    <span class="nav-label text-[10px] font-semibold uppercase tracking-wider" style="color: #30363d;">Inventory</span>
+                </div>
+                <a href="{{ route('items.index') }}" class="nav-item {{ request()->routeIs('items.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fas fa-box"></i></span>
+                    <span class="nav-label">Roll Items</span>
+                </a>
+
+                <div class="px-5 mt-4 mb-2">
+                    <span class="nav-label text-[10px] font-semibold uppercase tracking-wider" style="color: #30363d;">Quality</span>
+                </div>
+                <a href="{{ route('defects.index') }}" class="nav-item {{ request()->routeIs('defects.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fas fa-triangle-exclamation"></i></span>
+                    <span class="nav-label">Barang Bermasalah</span>
+                </a>
+            </nav>
+
+            <!-- Sidebar footer -->
+            <div class="px-5 py-4" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                <div class="sidebar-title flex items-center gap-2 text-xs" style="color: #30363d;">
+                    <i class="fas fa-database"></i>
+                    <span>{{ number_format(\App\Models\RollItem::count()) }} rolls</span>
                 </div>
             </div>
+        </aside>
 
-            <footer class="sticky-footer">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span style="color: var(--text-dim); font-size: 0.72rem;">&copy; {{ date('Y') }} Roll Off Management</span>
+        <!-- Main -->
+        <div class="flex-1 flex flex-col min-h-screen lg:ml-0">
+
+            <!-- Topbar -->
+            <header class="sticky top-0 z-30 px-4 lg:px-6 py-3 flex items-center gap-3"
+                    style="background: rgba(13,17,23,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.04);">
+                <button onclick="toggleSidebar()" class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5 transition">
+                    <i class="fas fa-bars text-sm" style="color: #8b949e;"></i>
+                </button>
+                <button onclick="toggleSidebar()" class="hidden lg:flex w-9 h-9 rounded-lg items-center justify-center hover:bg-white/5 transition" title="Toggle sidebar">
+                    <i class="fas fa-bars text-sm" style="color: #8b949e;"></i>
+                </button>
+                <div class="flex-1">
+                    <h1 class="text-sm font-semibold" style="color: #e6edf3;">@yield('page-title', 'Dashboard')</h1>
+                </div>
+                <div class="hidden sm:flex items-center gap-2 text-xs" style="color: #484f58;">
+                    <i class="fas fa-clock"></i>
+                    <span id="liveTime"></span>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 p-4 lg:p-6">
+                @if(session('success'))
+                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium animate-in"
+                         style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #4ade80;">
+                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
                     </div>
-                </div>
+                @endif
+                @if(session('error'))
+                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium animate-in"
+                         style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171;">
+                        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
+                    </div>
+                @endif
+                @yield('content')
+            </main>
+
+            <!-- Footer -->
+            <footer class="px-6 py-3 text-center" style="border-top: 1px solid rgba(255,255,255,0.04);">
+                <span class="text-xs" style="color: #30363d;">&copy; {{ date('Y') }} Roll Off Management</span>
             </footer>
         </div>
     </div>
 
-    <a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+    <script>
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebarOverlay');
+            sb.classList.toggle('collapsed');
+            ov.classList.toggle('show');
+        }
 
-    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-    <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+        // Live clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveTime').textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        }
+        updateClock();
+        setInterval(updateClock, 30000);
+
+        // Close sidebar on nav (mobile)
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth < 1024) toggleSidebar();
+            });
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>

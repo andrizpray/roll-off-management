@@ -1,200 +1,220 @@
 @extends('layouts.app')
 
 @section('title', 'Detail ' . $item->lot_id)
-@section('page-title', '<i class="fas fa-box mr-1"></i> Detail Roll')
+@section('page-title', '<i class="fas fa-box mr-2 opacity-60"></i>Detail Roll')
 
 @section('content')
-<!-- Back -->
-<div class="tw-mb-3">
-    <a href="{{ URL::previous() }}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;">
-        <i class="fas fa-arrow-left mr-1"></i> Kembali
-    </a>
-</div>
+<div class="animate-in space-y-4">
 
-<!-- Header Card -->
-<div class="card shadow tw-mb-3">
-    <div class="card-header tw-py-3 tw-px-4">
-        <div class="tw-flex tw-items-center tw-justify-between tw-flex-wrap tw-gap-2">
+    <!-- Back -->
+    <a href="{{ URL::previous() }}" class="inline-flex items-center gap-2 text-xs font-medium no-underline transition hover:opacity-80" style="color: #8b949e;">
+        <i class="fas fa-arrow-left"></i> Kembali
+    </a>
+
+    <!-- Header -->
+    <div class="glass p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div>
-                <h6 class="m-0 font-weight-bold" style="color: var(--accent-blue); font-size: 0.95rem;">
-                    <i class="fas fa-barcode mr-1"></i>{{ $item->lot_id }}
-                    @if($item->item_id) <span class="text-gray-500 tw-ml-2" style="font-size:0.8rem;">Item: {{ $item->item_id }}</span> @endif
-                </h6>
-                @if($item->description)<span class="text-gray-500" style="font-size:0.8rem;">{{ $item->description }}</span>@endif
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-barcode text-sm" style="color: #60a5fa;"></i>
+                    {{ $item->lot_id }}
+                    @if($item->item_id) <span class="text-sm font-normal" style="color: #484f58;">Item: {{ $item->item_id }}</span> @endif
+                </h2>
+                @if($item->description)
+                    <p class="text-sm mt-1" style="color: #8b949e;">{{ $item->description }}</p>
+                @endif
             </div>
-            <div class="tw-flex tw-items-center tw-gap-2 tw-flex-wrap">
+            <div class="flex flex-wrap items-center gap-2">
                 @if($item->current_location)
-                    <span class="badge badge-loc" style="font-size:0.8rem; padding:5px 10px;">
-                        <i class="fas fa-map-pin mr-1"></i>{{ $item->current_location }}
+                    <span class="tag tag-blue" style="padding: 5px 10px; font-size: 0.8rem;">
+                        <i class="fas fa-map-pin"></i> {{ $item->current_location }}
                     </span>
                 @endif
                 @php
-                    $bc='badge-na'; $st=strtolower($item->status_barang ?? '');
-                    if($st=='good') $bc='badge-good';
-                    elseif(in_array($st,['hold','pending'])) $bc='badge-hold';
-                    elseif(in_array($st,['reject','problem','rusak'])) $bc='badge-problem';
+                    $tagClass = 'tag-gray';
+                    $st = strtolower($item->status_barang ?? '');
+                    if($st == 'good') $tagClass = 'tag-green';
+                    elseif(in_array($st, ['hold','pending'])) $tagClass = 'tag-yellow';
+                    elseif(in_array($st, ['reject','problem','rusak'])) $tagClass = 'tag-red';
                 @endphp
                 @if($item->status_barang && $item->status_barang != '-')
-                    <span class="badge {{ $bc }}" style="font-size:0.8rem; padding:5px 10px;">{{ $item->status_barang }}</span>
+                    <span class="tag {{ $tagClass }}" style="padding: 5px 10px; font-size: 0.8rem;">{{ $item->status_barang }}</span>
                 @endif
             </div>
         </div>
-    </div>
-    <div class="card-body">
-        <div class="info-grid">
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-weight-hanging mr-1"></i>End Qty</div>
-                <div class="info-value" style="font-size:1.15rem; color:var(--accent-green);">{{ number_format($item->end_qty) }}</div>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-weight-hanging mr-1"></i>End Qty</div>
+                <div class="text-lg font-bold" style="color: #4ade80;">{{ number_format($item->end_qty) }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-scroll mr-1"></i>Paper Type</div>
-                <div class="info-value">{{ $item->paper_type ?? '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-scroll mr-1"></i>Paper Type</div>
+                <div class="text-sm font-semibold text-white">{{ $item->paper_type ?? '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-ruler mr-1"></i>GSM</div>
-                <div class="info-value">{{ $item->gsm ?? '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-ruler mr-1"></i>GSM</div>
+                <div class="text-sm font-semibold text-white">{{ $item->gsm ?? '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-layer-group mr-1"></i>Plybond</div>
-                <div class="info-value">{{ $item->plybond ?? '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-layer-group mr-1"></i>Plybond</div>
+                <div class="text-sm font-semibold text-white">{{ $item->plybond ?? '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-arrows-alt-h mr-1"></i>Width</div>
-                <div class="info-value">{{ $item->width ? $item->width . ' MM' : '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-arrows-left-right mr-1"></i>Width</div>
+                <div class="text-sm font-semibold text-white">{{ $item->width ? $item->width . ' MM' : '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-sync mr-1"></i>Rew ID</div>
-                <div class="info-value">{{ $item->rew_id ?? '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-sync mr-1"></i>Rew ID</div>
+                <div class="text-sm font-semibold text-white">{{ $item->rew_id ?? '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-circle mr-1"></i>Diameter</div>
-                <div class="info-value">{{ $item->diameter ?? '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-circle mr-1"></i>Diameter</div>
+                <div class="text-sm font-semibold text-white">{{ $item->diameter ?? '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-arrows-alt-v mr-1"></i>Thickness</div>
-                <div class="info-value">{{ $item->thickness ?? '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-arrows-up-down mr-1"></i>Thickness</div>
+                <div class="text-sm font-semibold text-white">{{ $item->thickness ?? '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-star mr-1"></i>Grade</div>
-                <div class="info-value">{{ $item->grade ?? '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-star mr-1"></i>Grade</div>
+                <div class="text-sm font-semibold text-white">{{ $item->grade ?? '-' }}</div>
             </div>
-            <div class="info-cell">
-                <div class="info-label"><i class="fas fa-calendar mr-1"></i>Tanggal</div>
-                <div class="info-value">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</div>
+            <div class="info-box">
+                <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" style="color: #484f58;"><i class="fas fa-calendar mr-1"></i>Tanggal</div>
+                <div class="text-sm font-semibold text-white">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</div>
             </div>
         </div>
+
         @if($item->comments)
-            <div class="tw-mt-3 tw-p-3 tw-rounded-lg" style="background:var(--bg-card-header); font-size:0.8rem;">
-                <span class="text-gray-500"><i class="fas fa-sticky-note mr-1"></i>Comments: </span>
-                <span style="color:var(--text-secondary);">{{ $item->comments }}</span>
+            <div class="mt-4 p-3 rounded-xl text-sm" style="background: rgba(30,41,59,0.5); border: 1px solid rgba(255,255,255,0.04);">
+                <span style="color: #484f58;"><i class="fas fa-sticky-note mr-1"></i>Comments:</span>
+                <span style="color: #c9d1d9;">{{ $item->comments }}</span>
             </div>
         @endif
     </div>
-</div>
 
-<!-- Location Timeline -->
-<div class="card shadow tw-mb-3">
-    <div class="card-header tw-py-2 tw-px-4">
-        <h6 class="m-0 tw-font-bold" style="color: var(--accent-blue); font-size: 0.82rem;">
-            <i class="fas fa-route mr-1"></i>Tracking Lokasi & SO
-        </h6>
-    </div>
-    <div class="card-body">
-        <div class="loc-timeline">
+    <!-- Location Timeline -->
+    <div class="glass p-5">
+        <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fas fa-route text-xs" style="color: #60a5fa;"></i>
+            Tracking Lokasi & SO
+        </h3>
+        <div class="timeline">
             @if($item->so_september && $item->so_september != '-')
-            <div class="loc-timeline-item">
-                <div class="loc-period">SO September 2025</div>
-                <div class="loc-value"><i class="fas fa-file-invoice mr-1" style="color:var(--accent-purple);"></i>{{ $item->so_september }}</div>
+            <div class="timeline-item">
+                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">SO September 2025</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_september }}</div>
             </div>
             @endif
             @if($item->so_desember && $item->so_desember != '-')
-            <div class="loc-timeline-item">
-                <div class="loc-period">SO Desember 2025</div>
-                <div class="loc-value"><i class="fas fa-file-invoice mr-1" style="color:var(--accent-purple);"></i>{{ $item->so_desember }}</div>
+            <div class="timeline-item filled">
+                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">SO Desember 2025</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_desember }}</div>
                 @if($item->pic_2025 && $item->pic_2025 != '-')
-                    <div class="text-gray-500" style="font-size:0.78rem; margin-top:2px;"><i class="fas fa-user mr-1"></i>PIC: {{ $item->pic_2025 }}</div>
+                    <div class="text-xs mt-1" style="color: #8b949e;"><i class="fas fa-user mr-1"></i>PIC: {{ $item->pic_2025 }}</div>
                 @endif
             </div>
             @endif
             @if($item->lokasi_receiving && $item->lokasi_receiving != '-')
-            <div class="loc-timeline-item">
-                <div class="loc-period">Lokasi Receiving</div>
-                <div class="loc-value"><i class="fas fa-map-marker-alt mr-1" style="color:var(--accent-blue);"></i>{{ $item->lokasi_receiving }}</div>
+            <div class="timeline-item">
+                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">Lokasi Receiving</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-map-marker-alt mr-1.5" style="color: #60a5fa;"></i>{{ $item->lokasi_receiving }}</div>
             </div>
             @endif
             @if($item->receiving_2026 && $item->receiving_2026 != '-')
-            <div class="loc-timeline-item">
-                <div class="loc-period">Receiving 2026</div>
-                <div class="loc-value"><i class="fas fa-warehouse mr-1" style="color:var(--accent-blue);"></i>{{ $item->receiving_2026 }}</div>
+            <div class="timeline-item filled">
+                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">Receiving 2026</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-warehouse mr-1.5" style="color: #60a5fa;"></i>{{ $item->receiving_2026 }}</div>
             </div>
             @endif
             @if($item->pic_2026 && $item->pic_2026 != '-')
-            <div class="loc-timeline-item">
-                <div class="loc-period">PIC 2026</div>
-                <div class="loc-value"><i class="fas fa-user mr-1" style="color:var(--accent-teal);"></i>{{ $item->pic_2026 }}</div>
+            <div class="timeline-item">
+                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">PIC 2026</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-user mr-1.5" style="color: #2dd4bf;"></i>{{ $item->pic_2026 }}</div>
             </div>
             @endif
             @if($item->rcv_cnv_2026 && $item->rcv_cnv_2026 != '-')
-            <div class="loc-timeline-item">
-                <div class="loc-period">RCV/CNV 2026</div>
-                <div class="loc-value"><i class="fas fa-exchange-alt mr-1" style="color:var(--accent-yellow);"></i>{{ $item->rcv_cnv_2026 }}</div>
+            <div class="timeline-item">
+                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">RCV/CNV 2026</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-right-left mr-1.5" style="color: #facc15;"></i>{{ $item->rcv_cnv_2026 }}</div>
             </div>
             @endif
             @if($item->so_maret_2026 && $item->so_maret_2026 != '-')
-            <div class="loc-timeline-item">
-                <div class="loc-period">SO Maret 2026</div>
-                <div class="loc-value"><i class="fas fa-file-invoice mr-1" style="color:var(--accent-purple);"></i>{{ $item->so_maret_2026 }}</div>
+            <div class="timeline-item filled">
+                <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #484f58;">SO Maret 2026</div>
+                <div class="text-sm font-semibold text-white mt-0.5"><i class="fas fa-file-invoice mr-1.5" style="color: #a78bfa;"></i>{{ $item->so_maret_2026 }}</div>
             </div>
             @endif
             @if(!$item->current_location)
-                <div class="text-center text-gray-500 tw-py-4">
-                    <i class="fas fa-route fa-2x tw-mb-2"></i><br>Belum ada data tracking
+                <div class="text-center py-8">
+                    <i class="fas fa-route text-xl block mb-2" style="color: #30363d;"></i>
+                    <span class="text-xs" style="color: #484f58;">Belum ada data tracking</span>
                 </div>
             @endif
         </div>
     </div>
-</div>
 
-<!-- Defects -->
-@if($defects->count() > 0)
-<div class="card shadow tw-mb-3" style="border-left: 3px solid var(--accent-red);">
-    <div class="card-header tw-py-2 tw-px-4">
-        <h6 class="m-0 tw-font-bold" style="color: var(--accent-red); font-size: 0.82rem;">
-            <i class="fas fa-exclamation-triangle mr-1"></i>Defect Terkait ({{ $defects->count() }})
-        </h6>
-    </div>
-    <div class="card-body tw-p-2">
-        <div class="desktop-table">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover mb-0" style="font-size:0.78rem;">
+    <!-- Related Defects -->
+    @if($defects->count() > 0)
+    <div class="glass overflow-hidden" style="border-left: 3px solid #ef4444;">
+        <div class="px-5 pt-4 pb-2">
+            <h3 class="text-sm font-semibold flex items-center gap-2" style="color: #f87171;">
+                <i class="fas fa-triangle-exclamation text-xs"></i>
+                Defect Terkait ({{ $defects->count() }})
+            </h3>
+        </div>
+
+        <!-- Desktop -->
+        <div class="hidden md:block">
+            <div class="overflow-x-auto">
+                <table class="data-table">
                     <thead><tr><th>#</th><th>Tahun</th><th>Paper</th><th>GSM</th><th>Alasan</th><th>Tanggal</th><th>Keterangan</th></tr></thead>
                     <tbody>
                         @foreach($defects as $i => $def)
                         <tr>
-                            <td>{{ $i+1 }}</td>
-                            <td><span class="badge badge-secondary">{{ $def->year }}</span></td>
+                            <td style="color: #30363d;">{{ $i+1 }}</td>
+                            <td><span class="tag tag-gray">{{ $def->year }}</span></td>
                             <td>{{ $def->paper_type ?? '-' }}</td>
                             <td>{{ $def->gsm ?? '-' }}</td>
-                            <td><span class="badge badge-danger">{{ $def->reason }}</span></td>
+                            <td><span class="tag tag-red">{{ $def->reason }}</span></td>
                             <td>{{ $def->defect_date ?? '-' }}</td>
-                            <td class="truncate" style="max-width:140px;">{{ $def->keterangan ?? '-' }}</td>
+                            <td class="truncate" style="max-width: 150px;">{{ $def->keterangan ?? '-' }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="mobile-cards">
+
+        <!-- Mobile -->
+        <div class="md:hidden p-4 space-y-2">
             @foreach($defects as $def)
-            <div class="mobile-item-card">
-                <div class="info-row"><span class="info-label">Tahun</span><span class="info-value"><span class="badge badge-secondary">{{ $def->year }}</span></span></div>
-                <div class="info-row"><span class="info-label">Alasan</span><span class="info-value"><span class="badge badge-danger">{{ $def->reason }}</span></span></div>
-                <div class="info-row"><span class="info-label">Tanggal</span><span class="info-value">{{ $def->defect_date ?? '-' }}</span></div>
-                @if($def->keterangan)<div class="info-row"><span class="info-label">Ket</span><span class="info-value truncate" style="max-width:60%;">{{ Str::limit($def->keterangan, 40) }}</span></div>@endif
+            <div class="mobile-card">
+                <div class="flex justify-between text-xs mb-1.5">
+                    <span style="color: #484f58;">Tahun</span>
+                    <span class="tag tag-gray">{{ $def->year }}</span>
+                </div>
+                <div class="flex justify-between text-xs mb-1.5">
+                    <span style="color: #484f58;">Alasan</span>
+                    <span class="tag tag-red">{{ $def->reason }}</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                    <span style="color: #484f58;">Tanggal</span>
+                    <span style="color: #c9d1d9;">{{ $def->defect_date ?? '-' }}</span>
+                </div>
+                @if($def->keterangan)
+                <div class="flex justify-between text-xs mt-1.5">
+                    <span style="color: #484f58;">Ket</span>
+                    <span class="truncate text-right" style="color: #c9d1d9; max-width: 60%;">{{ Str::limit($def->keterangan, 40) }}</span>
+                </div>
+                @endif
             </div>
             @endforeach
         </div>
     </div>
+    @endif
+
 </div>
-@endif
 @endsection
