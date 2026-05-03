@@ -102,6 +102,10 @@
     <div class="flex items-center justify-between text-xs" class="text-gray-400">
         <span><i class="fas fa-list mr-1"></i>{{ number_format($items->total()) }} items</span>
         <div class="flex items-center gap-2">
+            <span id="selectedCount" class="hidden text-blue-600 font-semibold"><i class="fas fa-check-square mr-1"></i><span id="selectedNum">0</span> dipilih</span>
+            <button id="printSelectedBtn" onclick="printSelected()" class="hidden btn btn-ghost flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem;">
+                <i class="fas fa-print"></i> Print Dipilih
+            </button>
             <a href="{{ route('items.export', request()->except('page')) }}" class="btn btn-primary flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem;">
                 <i class="fas fa-file-excel"></i> Export Excel
             </a>
@@ -110,15 +114,17 @@
     </div>
 
     <!-- DESKTOP TABLE -->
-    <div class="hidden md:block glass overflow-hidden">
+    <div class="hidden md:block card overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="data-table">
+            <table class="data-table" id="itemsTable">
                 <thead>
                     <tr>
+                        <th style="width: 35px;"><input type="checkbox" id="selectAll" onchange="toggleAll(this)" class="cursor-pointer"></th>
                         <th style="width: 35px;">#</th>
                         <th>Lot ID</th>
                         <th>Description</th>
                         <th>GSM</th>
+                        <th>Grade</th>
                         <th>Width</th>
                         <th>Qty</th>
                         <th>Lokasi</th>
@@ -131,15 +137,17 @@
                 </thead>
                 <tbody>
                     @forelse($items as $i => $item)
-                    <tr onclick="window.location='{{ route('items.show', $item->id) }}'">
+                    <tr class="item-row" data-id="{{ $item->id }}">
+                        <td><input type="checkbox" class="row-check cursor-pointer" value="{{ $item->id }}" onchange="updateSelection()"></td>
                         <td class="text-gray-400">{{ ($items->currentPage()-1)*$items->perPage()+$i+1 }}</td>
                         <td>
-                            <a href="{{ route('items.show', $item->id) }}" class="font-semibold no-underline hover:underline" class="text-blue-500" onclick="event.stopPropagation();">{{ $item->lot_id }}</a>
+                            <a href="{{ route('items.show', $item->id) }}" class="font-semibold no-underline hover:underline" style="color: #3b82f6;" onclick="event.stopPropagation();">{{ $item->lot_id }}</a>
                         </td>
                         <td class="truncate" style="max-width: 140px;" title="{{ $item->description }}">{{ $item->description ?? '-' }}</td>
                         <td>{{ $item->gsm ?? '-' }}</td>
+                        <td><span class="font-medium text-gray-700">{{ $item->grade ?? '-' }}</span></td>
                         <td>{{ $item->width ?? '-' }}</td>
-                        <td class="font-semibold text-white">{{ number_format($item->end_qty) }}</td>
+                        <td class="font-semibold text-gray-900">{{ number_format($item->end_qty) }}</td>
                         <td>
                             @if($item->current_location)
                                 <span class="tag tag-blue" title="{{ $item->current_location_label }}">{{ Str::limit($item->current_location, 16) }}</span>
@@ -180,14 +188,14 @@
                         </td>
                         <td>
                             <a href="{{ route('items.show', $item->id) }}" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 transition no-underline" onclick="event.stopPropagation();">
-                                <i class="fas fa-arrow-right text-xs" class="text-gray-400"></i>
+                                <i class="fas fa-arrow-right text-xs text-gray-400"></i>
                             </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="text-center py-10">
-                            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-400"></i>
+                        <td colspan="14" class="text-center py-10">
+                            <i class="fas fa-inbox text-2xl mb-2 block text-gray-400"></i>
                             <span class="text-gray-400">Tidak ada data</span>
                         </td>
                     </tr>
@@ -201,9 +209,9 @@
     <div class="md:hidden">
         @forelse($items as $item)
         <a href="{{ route('items.show', $item->id) }}" class="no-underline block">
-            <div class="mobile-card">
+            <div class="mobile-card item-row" data-id="{{ $item->id }}">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="font-semibold text-sm" class="text-blue-500">
+                    <span class="font-semibold text-sm" style="color: #3b82f6;">
                         <i class="fas fa-barcode mr-1 text-xs"></i>{{ $item->lot_id }}
                     </span>
                     @if($item->current_location)
@@ -213,16 +221,22 @@
                 @if($item->description)
                     <div class="flex justify-between text-xs mb-1.5">
                         <span class="text-gray-400">Desc</span>
-                        <span class="truncate text-right" style="color: #c9d1d9; max-width: 65%;">{{ Str::limit($item->description, 35) }}</span>
+                        <span class="truncate text-right text-gray-600" style="max-width: 65%;">{{ Str::limit($item->description, 35) }}</span>
                     </div>
                 @endif
                 <div class="flex justify-between text-xs mb-1.5">
                     <span class="text-gray-400">Spec</span>
                     <span class="text-gray-600">{{ $item->gsm ?? '-' }} / {{ $item->width ?? '-' }} mm</span>
                 </div>
+                @if($item->grade)
+                    <div class="flex justify-between text-xs mb-1.5">
+                        <span class="text-gray-400">Grade</span>
+                        <span class="text-gray-700 font-medium">{{ $item->grade }}</span>
+                    </div>
+                @endif
                 <div class="flex justify-between text-xs mb-2">
                     <span class="text-gray-400">Qty</span>
-                    <span class="font-semibold text-white">{{ number_format($item->end_qty) }}</span>
+                    <span class="font-semibold text-gray-900">{{ number_format($item->end_qty) }}</span>
                 </div>
                 <div class="flex flex-wrap gap-1.5">
                     @if($item->so_desember && $item->so_desember != '-')
@@ -249,7 +263,7 @@
         </a>
         @empty
         <div class="text-center py-10">
-            <i class="fas fa-inbox text-2xl mb-2 block" class="text-gray-400"></i>
+            <i class="fas fa-inbox text-2xl mb-2 block text-gray-400"></i>
             <span class="text-gray-400">Tidak ada data</span>
         </div>
         @endforelse
@@ -273,6 +287,74 @@ if(filterBtn && chevron) {
     filterBtn.addEventListener('click', () => {
         chevron.style.transform = document.getElementById('advFilters').classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
     });
+}
+
+// Selection
+function toggleAll(el) {
+    document.querySelectorAll('.row-check').forEach(cb => { cb.checked = el.checked; });
+    updateSelection();
+}
+
+function updateSelection() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    const count = checked.length;
+    const all = document.querySelectorAll('.row-check');
+    document.getElementById('selectAll').checked = all.length > 0 && count === all.length;
+    document.getElementById('selectedCount').classList.toggle('hidden', count === 0);
+    document.getElementById('printSelectedBtn').classList.toggle('hidden', count === 0);
+    document.getElementById('selectedNum').textContent = count;
+    document.querySelectorAll('.item-row').forEach(row => {
+        const cb = row.querySelector('.row-check');
+        if(cb) row.style.background = cb.checked ? '#eff6ff' : '';
+    });
+}
+
+function printSelected() {
+    const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => cb.value);
+    if(ids.length === 0) return;
+
+    // Open print window with only selected rows
+    const table = document.getElementById('itemsTable');
+    const headers = table.querySelector('thead tr').innerHTML;
+    let rows = '';
+    document.querySelectorAll('.row-check:checked').forEach(cb => {
+        const row = cb.closest('tr.item-row');
+        // Remove checkbox cell, keep rest
+        const cells = Array.from(row.cells).slice(1).map(td => td.innerHTML).join('');
+        rows += '<tr>' + cells + '</tr>';
+    });
+
+    const printHtml = `
+    <!DOCTYPE html>
+    <html><head>
+        <title>Roll Items - Print</title>
+        <style>
+            body { font-family: Inter, sans-serif; padding: 15mm; color: #1e293b; }
+            h2 { font-size: 16px; margin-bottom: 4px; }
+            .sub { font-size: 11px; color: #64748b; margin-bottom: 16px; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.3px; font-size: 9px; color: #64748b; }
+            td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+            tr:hover td { background: #f8fafc; }
+            .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; }
+            .tag-blue { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+            .tag-green { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+            .tag-red { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+            .tag-yellow { background: #fefce8; color: #ca8a04; border: 1px solid #fde68a; }
+            .tag-purple { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+            .tag-gray { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+            @page { margin: 15mm; }
+        </style>
+    </head><body>
+        <h2>Roll Off Management</h2>
+        <div class="sub">${ids.length} item dipilih — dicetak pada ${new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'})}</div>
+        <table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>
+    </body></html>`;
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    w.document.write(printHtml);
+    w.document.close();
+    w.onload = () => { w.print(); };
 }
 </script>
 @endsection
