@@ -67,6 +67,11 @@ class RollItemController extends Controller
             $query->where('status_barang', $status);
         }
 
+        // Filter: Grade
+        if ($grade = $request->input('grade')) {
+            $query->where('grade', $grade);
+        }
+
         // Sort
         $sortField = $request->input('sort', 'created_at');
         $sortDir = $request->input('dir', 'desc');
@@ -85,9 +90,10 @@ class RollItemController extends Controller
         $widths = RollItem::whereNotNull('width')->distinct()->orderBy('width')->pluck('width');
         $locations = RollItem::whereNotNull('receiving_2026')->where('receiving_2026', '!=', '-')->distinct()->orderBy('receiving_2026')->pluck('receiving_2026');
         $statuses = RollItem::whereNotNull('status_barang')->where('status_barang', '!=', '-')->distinct()->orderBy('status_barang')->pluck('status_barang');
+        $grades = RollItem::whereNotNull('grade')->where('grade', '!=', '-')->where('grade', '!=', '')->distinct()->orderBy('grade')->pluck('grade');
 
         return view('items.index', compact(
-            'items', 'paperTypes', 'gsms', 'widths', 'locations', 'statuses'
+            'items', 'paperTypes', 'gsms', 'widths', 'locations', 'statuses', 'grades'
         ));
     }
 
@@ -188,7 +194,7 @@ class RollItemController extends Controller
 
     public function export(Request $request)
     {
-        $filters = $request->only(['search', 'paper_type', 'gsm', 'width', 'receiving_2026', 'status', 'sort', 'dir']);
+        $filters = $request->only(['search', 'paper_type', 'gsm', 'width', 'receiving_2026', 'status', 'grade', 'sort', 'dir']);
         $filename = 'roll-items-' . date('Y-m-d') . '.xlsx';
 
         ini_set('memory_limit', '512M');

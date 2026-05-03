@@ -57,6 +57,10 @@ class RollItemsExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             $query->where('status_barang', $status);
         }
 
+        if ($grade = $this->filters['grade'] ?? null) {
+            $query->where('grade', $grade);
+        }
+
         $sortField = $this->filters['sort'] ?? 'lot_id';
         $sortDir = $this->filters['dir'] ?? 'asc';
         $allowedSort = ['lot_id', 'paper_type', 'gsm', 'width', 'receiving_2026', 'end_qty', 'so_desember', 'so_maret_2026', 'created_at', 'tr_date'];

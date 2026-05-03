@@ -21,7 +21,7 @@
         <button class="btn btn-primary" type="submit">
             <i class="fas fa-search text-xs"></i> Cari
         </button>
-        @if(request('search') || request('paper_type') || request('gsm') || request('receiving_2026') || request('status'))
+        @if(request('search') || request('paper_type') || request('gsm') || request('receiving_2026') || request('status') || request('grade'))
             <a href="{{ route('items.index') }}" class="btn btn-ghost">
                 <i class="fas fa-times text-xs"></i> Reset
             </a>
@@ -37,11 +37,11 @@
             </span>
             <i class="fas fa-chevron-down text-xs transition-transform" id="filterChevron" class="text-gray-400"></i>
         </button>
-        <div id="advFilters" class="hidden {{ (request('paper_type') || request('gsm') || request('width') || request('receiving_2026') || request('status') || request('sort')) ? '' : 'hidden' }}">
+        <div id="advFilters" class="hidden {{ (request('paper_type') || request('gsm') || request('width') || request('receiving_2026') || request('status') || request('grade') || request('sort')) ? '' : 'hidden' }}">
             <div class="px-4 pb-4 pt-1">
                 <form method="GET" action="{{ route('items.index') }}" id="filterForm">
                     @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
                         <div>
                             <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Paper Type</label>
                             <select name="paper_type" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
@@ -78,6 +78,13 @@
                             </select>
                         </div>
                         <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Grade</label>
+                            <select name="grade" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
+                                <option value="">Semua</option>
+                                @foreach($grades as $g)<option value="{{ $g }}" {{ request('grade') == $g ? 'selected' : '' }}>{{ $g }}</option>@endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-[10px] font-semibold uppercase tracking-wide mb-1.5" class="text-gray-400">Sort</label>
                             <select name="sort" class="select-field w-full" onchange="document.getElementById('filterForm').submit()">
                                 <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Terbaru</option>
@@ -92,7 +99,7 @@
         </div>
     </div>
 
-    @if(!request('paper_type') && !request('gsm') && !request('width') && !request('receiving_2026') && !request('status') && !request('sort'))
+    @if(!request('paper_type') && !request('gsm') && !request('width') && !request('receiving_2026') && !request('status') && !request('grade') && !request('sort'))
         <script>document.getElementById('advFilters').classList.add('hidden');</script>
     @else
         <script>document.getElementById('advFilters').classList.remove('hidden');</script>
@@ -129,6 +136,7 @@
                         <th>Qty</th>
                         <th>Lokasi</th>
                         <th>Status</th>
+                        <th>Komentar</th>
                         <th style="width: 35px;"></th>
                     </tr>
                 </thead>
@@ -166,6 +174,13 @@
                                 <span class="text-gray-400">-</span>
                             @endif
                         </td>
+                        <td class="truncate" style="max-width: 120px;" title="{{ $item->comments ?? '' }}">
+                            @if($item->comments && $item->comments != '-')
+                                <span class="text-xs text-gray-600"><i class="fas fa-comment-dots mr-1 text-gray-400"></i>{{ $item->comments }}</span>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
                         <td>
                             <a href="{{ route('items.show', $item->id) }}" class="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 transition no-underline" onclick="event.stopPropagation();">
                                 <i class="fas fa-arrow-right text-xs text-gray-400"></i>
@@ -174,7 +189,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="11" class="text-center py-10">
+                        <td colspan="12" class="text-center py-10">
                             <i class="fas fa-inbox text-2xl mb-2 block text-gray-400"></i>
                             <span class="text-gray-400">Tidak ada data</span>
                         </td>
@@ -212,6 +227,12 @@
                     <div class="flex justify-between text-xs mb-1.5">
                         <span class="text-gray-400">Grade</span>
                         <span class="text-gray-700 font-medium">{{ $item->grade }}</span>
+                    </div>
+                @endif
+                @if($item->comments && $item->comments != '-')
+                    <div class="flex justify-between text-xs mb-1.5">
+                        <span class="text-gray-400"><i class="fas fa-comment-dots mr-1"></i>Komen</span>
+                        <span class="truncate text-right text-gray-600" style="max-width: 65%;">{{ $item->comments }}</span>
                     </div>
                 @endif
                 <div class="flex justify-between text-xs mb-2">

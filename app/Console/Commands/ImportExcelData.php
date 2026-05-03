@@ -301,7 +301,7 @@ class ImportExcelData extends Command
             'DK DUPLEX KRAFT',
             'Paper Medium',
             'Core Board',
-            'Core Borad',
+            // 'Core Borad' removed — typo fixed via post-processing
             'MPC Medium Paper',
             'Grey Board',
             'Brown Board',
@@ -358,6 +358,9 @@ class ImportExcelData extends Command
         }
 
         $result['paper_type'] = strtoupper($paperType);
+
+        // Fix known typos from Excel data
+        $result['paper_type'] = str_replace('CORE BORAD', 'CORE BOARD', $result['paper_type']);
 
         // Parse remaining: {GSM_PREFIX}{GSM} E{PLYBOND} {WIDTH}
         // GSM prefix patterns: BK, CO, MP, GB, CB, BB, BKTB, COB, DR, DRP, BKL, BPTBG, BRPG, BCB, BKN, BKP, BKE, BKTBS, BKW, NRPG, MPC, OCT, OCTN, DK, BPC, YB, DR, etc.
