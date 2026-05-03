@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Roll Off Management')</title>
 
+    <!-- Prevent flash of wrong theme -->
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme');
+            if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +28,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
@@ -156,7 +167,7 @@
             border-radius: 10px; padding: 12px 14px;
         }
 
-        /* Button */
+        /* Buttons */
         .btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 8px 16px; border-radius: 10px; font-size: 0.84rem; font-weight: 500;
@@ -166,6 +177,21 @@
         .btn-primary:hover { background: #2563eb; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
         .btn-ghost { background: #fff; color: #64748b; border: 1px solid #e2e8f0; }
         .btn-ghost:hover { color: #1e293b; background: #f8fafc; border-color: #cbd5e1; }
+        .btn-delete { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 10px; }
+        .btn-delete:hover { background: #fee2e2; }
+
+        /* Topbar */
+        .topbar { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; }
+
+        /* Footer */
+        .footer-bar { border-top: 1px solid #e2e8f0; }
+
+        /* Modal */
+        .modal-card { background: #fff; border: 1px solid #e2e8f0; }
+
+        /* Alerts */
+        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; }
+        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
 
         /* Overlay */
         .sidebar-overlay {
@@ -186,14 +212,131 @@
 
         .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* Print */
+        /* Theme toggle */
+        #themeToggle:hover { background: rgba(148,163,184,0.1); }
+        #moonIcon { color: #6b7280; }
+        #sunIcon { color: #fbbf24; display: none; }
+        html.dark #moonIcon { display: none; }
+        html.dark #sunIcon { display: inline; }
+
+        /* Theme transition */
+        body, .card, .mobile-card, .input-field, .select-field, .info-box,
+        .topbar, .footer-bar, .page-btn, .btn-ghost, .modal-card, .alert-success, .alert-error,
+        .data-table thead th, .data-table tbody td {
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease, box-shadow 0.25s ease;
+        }
+
+        /* ============================================= */
+        /* ===== DARK MODE ===== */
+        /* ============================================= */
+        html.dark { color-scheme: dark; }
+        html.dark body { background: #0f172a; color: #e2e8f0; }
+
+        /* Cards */
+        html.dark .card { background: #1e293b; border-color: #334155; }
+        html.dark .mobile-card { background: #1e293b; border-color: #334155; }
+        html.dark .mobile-card:hover { border-color: #60a5fa; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
+        html.dark .stat-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+
+        /* Table */
+        html.dark .data-table thead th { background: #0f172a; color: #94a3b8; border-color: #334155; }
+        html.dark .data-table tbody tr:hover { background: rgba(59,130,246,0.06); }
+        html.dark .data-table tbody td { border-color: #1e293b; color: #cbd5e1; }
+
+        /* Tags */
+        html.dark .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        html.dark .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+        html.dark .tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+        html.dark .tag-yellow { background: rgba(234,179,8,0.15); color: #fbbf24; }
+        html.dark .tag-purple { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        html.dark .tag-gray { background: #334155; color: #94a3b8; }
+        html.dark .tag-teal { background: rgba(20,184,166,0.15); color: #2dd4bf; }
+
+        /* Inputs */
+        html.dark .input-field { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+        html.dark .input-field:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,0.15); }
+        html.dark .input-field::placeholder { color: #64748b; }
+        html.dark .select-field { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+        html.dark .select-field:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,0.15); }
+
+        /* Buttons */
+        html.dark .btn-ghost { background: #1e293b; color: #94a3b8; border-color: #334155; }
+        html.dark .btn-ghost:hover { color: #e2e8f0; background: #334155; border-color: #475569; }
+        html.dark .btn-delete { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
+        html.dark .btn-delete:hover { background: rgba(239,68,68,0.25); }
+
+        /* Pagination */
+        html.dark .page-btn { color: #94a3b8; background: #1e293b; border-color: #334155; }
+        html.dark .page-btn:hover { color: #60a5fa; background: #334155; border-color: #60a5fa; }
+        html.dark .page-btn.active { color: #fff; background: #3b82f6; border-color: #3b82f6; }
+        html.dark .page-btn.disabled { color: #475569; }
+
+        /* Info box */
+        html.dark .info-box { background: #1e293b; border-color: #334155; }
+
+        /* Timeline */
+        html.dark .timeline::before { background: #334155; }
+        html.dark .timeline-item::before { border-color: #1e293b; box-shadow: 0 0 0 2px #334155; }
+        html.dark .timeline-item.filled::before { box-shadow: 0 0 0 2px rgba(34,197,94,0.3); }
+
+        /* Topbar / Footer / Modal */
+        html.dark .topbar { background: rgba(15,23,42,0.8); border-bottom-color: #334155; }
+        html.dark .footer-bar { border-top-color: #334155; }
+        html.dark .modal-card { background: #1e293b; border-color: #334155; }
+
+        /* Alerts */
+        html.dark .alert-success { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #4ade80; }
+        html.dark .alert-error { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+        /* Overlay */
+        html.dark .sidebar-overlay { background: rgba(0,0,0,0.6); }
+
+        /* Scrollbar */
+        html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+        html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* ===== Dark: Tailwind utility overrides ===== */
+        /* Text colors */
+        html.dark .text-gray-900 { color: #f1f5f9; }
+        html.dark .text-gray-800 { color: #e2e8f0; }
+        html.dark .text-gray-700 { color: #cbd5e1; }
+        html.dark .text-gray-600 { color: #94a3b8; }
+        html.dark .text-gray-500 { color: #94a3b8; }
+        html.dark .text-gray-400 { color: #64748b; }
+
+        /* Background colors */
+        html.dark .bg-white { background-color: #1e293b !important; }
+        html.dark .bg-gray-50 { background-color: #1e293b !important; }
+        html.dark .bg-gray-100 { background-color: #334155 !important; }
+        html.dark .bg-blue-50 { background-color: rgba(59,130,246,0.15) !important; }
+        html.dark .bg-red-50 { background-color: rgba(239,68,68,0.15) !important; }
+        html.dark .bg-green-50 { background-color: rgba(34,197,94,0.15) !important; }
+        html.dark .bg-teal-50 { background-color: rgba(20,184,166,0.15) !important; }
+        html.dark .bg-purple-50 { background-color: rgba(139,92,246,0.15) !important; }
+        html.dark .bg-amber-50 { background-color: rgba(234,179,8,0.15) !important; }
+
+        /* Border colors */
+        html.dark .border-gray-200 { border-color: #334155 !important; }
+        html.dark .border-gray-100 { border-color: #334155 !important; }
+
+        /* Hover backgrounds */
+        html.dark .hover\:bg-gray-50:hover { background-color: #1e293b !important; }
+        html.dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
+
+        /* Print: always force light mode */
         @media print {
-            body { background: #fff !important; }
-            .sidebar, .sidebar-overlay, header, footer, .btn, button[onclick*="toggleSidebar"] { display: none !important; }
+            html { color-scheme: light !important; }
+            body { background: #fff !important; color: #1e293b !important; }
+            .sidebar, .sidebar-overlay, header, footer, .btn, button[onclick*="toggleSidebar"], button[onclick*="toggleTheme"], #themeToggle { display: none !important; }
             main { padding: 0 !important; }
-            .card { border: 1px solid #ddd !important; box-shadow: none !important; page-break-inside: avoid; }
-            .data-table tbody tr:hover { background: transparent !important; }
-            .tag { border: 1px solid #ccc !important; background: #f9f9f9 !important; }
+            html.dark .card, html.dark .mobile-card { background: #fff !important; border-color: #ddd !important; box-shadow: none !important; page-break-inside: avoid; }
+            html.dark .data-table thead th { background: #f8fafc !important; color: #64748b !important; border-color: #e2e8f0 !important; }
+            html.dark .data-table tbody td { color: #1e293b !important; border-color: #f1f5f9 !important; }
+            html.dark .data-table tbody tr:hover { background: transparent !important; }
+            html.dark .tag { border: 1px solid #ccc !important; background: #f9f9f9 !important; color: #374151 !important; }
+            html.dark .info-box { background: #f8fafc !important; border-color: #e2e8f0 !important; }
+            html.dark .input-field, html.dark .select-field { background: #fff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
+            html.dark .text-gray-900, html.dark .text-gray-800, html.dark .text-gray-700 { color: #1e293b !important; }
             .animate-in { animation: none !important; }
             @page { margin: 15mm; }
         }
@@ -256,7 +399,7 @@
         <div class="flex-1 flex flex-col min-h-screen lg:ml-0">
 
             <!-- Topbar -->
-            <header class="sticky top-0 z-30 px-4 lg:px-6 py-3 flex items-center gap-3 bg-white/80 backdrop-blur-lg" style="border-bottom: 1px solid #e2e8f0;">
+            <header class="topbar sticky top-0 z-30 px-4 lg:px-6 py-3 flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-gray-100 transition">
                     <i class="fas fa-bars text-sm text-gray-500"></i>
                 </button>
@@ -266,34 +409,76 @@
                 <div class="flex-1">
                     <h1 class="text-sm font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
                 </div>
-                <div class="hidden sm:flex items-center gap-2 text-xs text-gray-400">
-                    <i class="fas fa-clock"></i>
-                    <span id="liveTime"></span>
+                <div class="flex items-center gap-1">
+                    <div class="hidden sm:flex items-center gap-2 text-xs text-gray-400 mr-2">
+                        <i class="fas fa-clock"></i>
+                        <span id="liveTime"></span>
+                    </div>
+                    <button onclick="toggleTheme()" id="themeToggle" class="w-9 h-9 rounded-lg flex items-center justify-center transition" title="Toggle tema">
+                        <i class="fas fa-moon text-sm" id="moonIcon"></i>
+                        <i class="fas fa-sun text-sm" id="sunIcon"></i>
+                    </button>
                 </div>
             </header>
 
             <!-- Content -->
             <main class="flex-1 p-4 lg:p-6">
                 @if(session('success'))
-                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium animate-in" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a;">
+                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium animate-in alert-success">
                         <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium animate-in" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626;">
+                    <div class="mb-4 px-4 py-3 rounded-xl text-sm font-medium animate-in alert-error">
                         <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
                     </div>
                 @endif
                 @yield('content')
             </main>
 
-            <footer class="px-6 py-3 text-center" style="border-top: 1px solid #e2e8f0;">
+            <footer class="footer-bar px-6 py-3 text-center">
                 <span class="text-xs text-gray-400">&copy; {{ date('Y') }} Roll Off Management</span>
             </footer>
         </div>
     </div>
 
     <script>
+        /* ===== Theme Toggle ===== */
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateChartTheme();
+        }
+
+        /* ===== Chart Theme ===== */
+        window.charts = window.charts || [];
+        function getChartColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                text: isDark ? '#94a3b8' : '#64748b',
+                grid: isDark ? '#1e293b' : '#f1f5f9',
+                doughnutBorder: isDark ? '#1e293b' : '#fff',
+            };
+        }
+        function updateChartTheme() {
+            const c = getChartColors();
+            Chart.defaults.color = c.text;
+            window.charts.forEach(function(chart) {
+                if (chart.options && chart.options.scales) {
+                    Object.values(chart.options.scales).forEach(function(scale) {
+                        if (scale.grid) scale.grid.color = c.grid;
+                    });
+                }
+                if (chart.config.type === 'doughnut' && chart.data.datasets && chart.data.datasets[0]) {
+                    chart.data.datasets[0].borderColor = c.doughnutBorder;
+                }
+                chart.update('none');
+            });
+        }
+        updateChartTheme();
+
+        /* ===== Sidebar ===== */
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('sidebarOverlay');
@@ -304,8 +489,8 @@
             document.getElementById('liveTime').textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         }
         updateClock(); setInterval(updateClock, 30000);
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => { if (window.innerWidth < 1024) toggleSidebar(); });
+        document.querySelectorAll('.nav-item').forEach(function(item) {
+            item.addEventListener('click', function() { if (window.innerWidth < 1024) toggleSidebar(); });
         });
     </script>
     @stack('scripts')

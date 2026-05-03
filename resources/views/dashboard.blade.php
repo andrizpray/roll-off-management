@@ -161,7 +161,8 @@
 
 @push('scripts')
 <script>
-Chart.defaults.color = '#64748b';
+const cc = window.__chartColors || { text: '#64748b', grid: '#f1f5f9', doughnutBorder: '#fff' };
+Chart.defaults.color = cc.text;
 Chart.defaults.font.family = 'Inter';
 Chart.defaults.font.size = 11;
 Chart.defaults.plugins.legend.labels.boxWidth = 12;
@@ -181,9 +182,9 @@ const palette = [
     { bg: 'rgba(99,102,241,0.7)', border: '#6366f1' },
     { bg: 'rgba(6,182,212,0.7)', border: '#06b6d4' },
 ];
-const gridColor = '#f1f5f9';
+const gridColor = cc.grid;
 
-new Chart(document.getElementById('paperTypeChart'), {
+const paperTypeChart = new Chart(document.getElementById('paperTypeChart'), {
     type: 'bar',
     data: {
         labels: [{!! $paperTypeStats->map(fn($p) => '"'.addslashes($p->paper_type).'"')->join(',') !!}],
@@ -191,8 +192,9 @@ new Chart(document.getElementById('paperTypeChart'), {
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { padding: 8 } }, x: { grid: { display: false }, border: { display: false }, ticks: { padding: 6, maxRotation: 45 } } } }
 });
+window.charts.push(paperTypeChart);
 
-new Chart(document.getElementById('locationChart'), {
+const locationChart = new Chart(document.getElementById('locationChart'), {
     type: 'bar',
     data: {
         labels: [{!! collect($locationRekap)->take(10)->map(fn($l) => '"'.addslashes($l->lokasi).'"')->join(',') !!}],
@@ -200,8 +202,9 @@ new Chart(document.getElementById('locationChart'), {
     },
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { padding: 8 } }, y: { grid: { display: false }, border: { display: false }, ticks: { padding: 6, font: { size: 10 } } } } }
 });
+window.charts.push(locationChart);
 
-new Chart(document.getElementById('gsmChart'), {
+const gsmChart = new Chart(document.getElementById('gsmChart'), {
     type: 'bar',
     data: {
         labels: [{!! $gsmStats->map(fn($g) => '"'.$g->gsm.'"')->join(',') !!}],
@@ -209,14 +212,16 @@ new Chart(document.getElementById('gsmChart'), {
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, border: { display: false }, ticks: { padding: 8 } }, x: { grid: { display: false }, border: { display: false }, ticks: { padding: 6, maxRotation: 45 } } } }
 });
+window.charts.push(gsmChart);
 
-new Chart(document.getElementById('defectChart'), {
+const defectChart = new Chart(document.getElementById('defectChart'), {
     type: 'doughnut',
     data: {
         labels: [{!! $defectReasonStats->map(fn($d) => '"'.addslashes($d->reason).'"')->join(',') !!}],
-        datasets: [{ data: [{!! $defectReasonStats->pluck('count')->join(',') !!}], backgroundColor: palette.map(c => c.bg), borderColor: '#fff', borderWidth: 2 }]
+        datasets: [{ data: [{!! $defectReasonStats->pluck('count')->join(',') !!}], backgroundColor: palette.map(c => c.bg), borderColor: cc.doughnutBorder, borderWidth: 2 }]
     },
     options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 10 } } } } }
 });
+window.charts.push(defectChart);
 </script>
 @endpush

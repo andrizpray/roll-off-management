@@ -172,7 +172,7 @@
 
     <!-- Summary Report Modal -->
     <div id="summaryModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6" style="border: 1px solid #e2e8f0;">
+        <div class="modal-card rounded-xl shadow-2xl max-w-sm w-full p-6">
             <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <i class="fas fa-chart-pie text-purple-500"></i> Summary Report
             </h3>
@@ -335,16 +335,17 @@
 
 @push('scripts')
 <script>
-Chart.defaults.color = '#64748b';
+const cc = window.__chartColors || { text: '#64748b', grid: '#f1f5f9', doughnutBorder: '#fff' };
+Chart.defaults.color = cc.text;
 Chart.defaults.font.family = 'Inter';
 Chart.defaults.font.size = 11;
-const gridColor = '#f1f5f9';
+const gridColor = cc.grid;
 
 // 5.2 Trend per bulan
 const trendLabels = [{!! $defectTrend->map(fn($d) => "'".substr($d->month,0,3)." ".$d->year."'")->join(',') !!}];
 const trendData = [{!! $defectTrend->pluck('count')->join(',') !!}];
 
-new Chart(document.getElementById('trendChart'), {
+const trendChart = new Chart(document.getElementById('trendChart'), {
     type: 'line',
     data: {
         labels: trendLabels,
@@ -357,7 +358,7 @@ new Chart(document.getElementById('trendChart'), {
             fill: true,
             tension: 0.4,
             pointBackgroundColor: '#3b82f6',
-            pointBorderColor: '#fff',
+            pointBorderColor: cc.doughnutBorder,
             pointBorderWidth: 2,
             pointRadius: 5,
             pointHoverRadius: 7,
@@ -372,13 +373,14 @@ new Chart(document.getElementById('trendChart'), {
         }
     }
 });
+window.charts.push(trendChart);
 
 // 5.1 Defect rate per paper type
 const paperLabels = [{!! $defectByPaper->map(fn($d) => '"'.addslashes($d->paper_type).'"')->join(',') !!}];
 const paperDefectCounts = [{!! $defectByPaper->pluck('defect_count')->join(',') !!}];
 const paperRollCounts = [{!! $defectByPaper->map(fn($d) => $rollByPaper[$d->paper_type]->roll_count ?? 0)->join(',') !!}];
 
-new Chart(document.getElementById('paperDefectChart'), {
+const paperDefectChart = new Chart(document.getElementById('paperDefectChart'), {
     type: 'bar',
     data: {
         labels: paperLabels,
@@ -412,9 +414,8 @@ new Chart(document.getElementById('paperDefectChart'), {
         }
     }
 });
+window.charts.push(paperDefectChart);
 </script>
-
-<script>
 function openSummaryModal() {
     document.getElementById('summaryModal').style.display = 'flex';
 }

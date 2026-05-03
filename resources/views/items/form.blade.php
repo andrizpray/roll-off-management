@@ -167,7 +167,7 @@
             </button>
             <a href="{{ isset($item) ? route('items.show', $item->id) : route('items.index') }}" class="btn btn-ghost px-6 py-2.5">Batal</a>
             @if(isset($item))
-                <button type="button" onclick="confirmDelete({{ $item->id }})" class="btn px-6 py-2.5" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 10px;">
+                <button type="button" onclick="confirmDelete({{ $item->id }})" class="btn btn-delete px-6 py-2.5">
                     <i class="fas fa-trash mr-1.5"></i>Hapus
                 </button>
                 <form id="deleteForm" method="POST" action="{{ route('items.destroy', $item->id) }}" style="display:none;">
@@ -181,7 +181,7 @@
 <!-- Delete Confirm Modal -->
 @if(isset($item))
 <div id="deleteModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6" style="border: 1px solid #e2e8f0;">
+    <div class="modal-card rounded-xl shadow-2xl max-w-sm w-full p-6">
         <h3 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
             <i class="fas fa-exclamation-triangle text-red-500"></i> Hapus Roll Item?
         </h3>
