@@ -349,17 +349,31 @@ function printSelected() {
     const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => cb.value);
     if(ids.length === 0) return;
 
-    // Open print window with only selected rows
-    const table = document.getElementById('itemsTable');
-    const headerCells = table.querySelectorAll('thead tr th');
-    // Skip checkbox (1st) and action buttons (last 2: QR + arrow)
-    const headers = Array.from(headerCells).slice(1, -2).map(th => th.outerHTML).join('');
+    // Column definitions: [header, width%, extract(row)]
+    const cols = [
+        { label: '#',         w: '4%',  fn: (r,i) => (i+1) },
+        { label: 'Lot ID',    w: '14%', fn: r => r.querySelector('a[style]')?.textContent?.trim() || r.cells[1]?.textContent?.trim() || '' },
+        { label: 'Description', w: '18%', fn: r => r.querySelector('.truncate')?.textContent?.trim() || r.cells[2]?.textContent?.trim() || '' },
+        { label: 'GSM',       w: '6%',  fn: r => r.cells[3]?.textContent?.trim() || '' },
+        { label: 'Grade',     w: '8%',  fn: r => r.cells[4]?.textContent?.trim() || '' },
+        { label: 'Width',     w: '6%',  fn: r => r.cells[5]?.textContent?.trim() || '' },
+        { label: 'TR Date',   w: '10%', fn: r => r.cells[6]?.textContent?.trim() || '' },
+        { label: 'Qty',       w: '7%',  fn: r => r.cells[7]?.textContent?.trim() || '' },
+        { label: 'Lokasi',    w: '10%', fn: r => r.querySelector('.tag-blue')?.textContent?.trim() || r.cells[8]?.textContent?.trim() || '' },
+        { label: 'Status',    w: '8%',  fn: r => r.querySelector('.tag')?.textContent?.trim() || r.cells[9]?.textContent?.trim() || '' },
+        { label: 'Komentar',  w: '9%',  fn: r => r.querySelector('.truncate[title]')?.textContent?.trim() || r.cells[10]?.textContent?.trim() || '' },
+    ];
+
+    const ths = cols.map(c => `<th style="width:${c.w}">${c.label}</th>`).join('');
+
     let rows = '';
+    let idx = 0;
     document.querySelectorAll('.row-check:checked').forEach(cb => {
         const row = cb.closest('tr.item-row');
-        // Skip checkbox (1st) and action buttons (last 2: QR + arrow)
-        const cells = Array.from(row.cells).slice(1, -2).map(td => td.innerHTML).join('');
-        rows += '<tr>' + cells + '</tr>';
+        if (!row) return;
+        const tds = cols.map(c => `<td>${c.fn(row, idx)}</td>`).join('');
+        rows += `<tr>${tds}</tr>`;
+        idx++;
     });
 
     const printHtml = `
@@ -367,26 +381,31 @@ function printSelected() {
     <html><head>
         <title>Roll Items - Print</title>
         <style>
-            body { font-family: Inter, sans-serif; padding: 15mm; color: #1e293b; }
-            h2 { font-size: 16px; margin-bottom: 4px; }
-            .sub { font-size: 11px; color: #64748b; margin-bottom: 16px; }
-            table { width: 100%; border-collapse: collapse; font-size: 11px; }
-            th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.3px; font-size: 9px; color: #64748b; }
-            td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-            tr:hover td { background: #f8fafc; }
-            .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 600; }
-            .tag-blue { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-            .tag-green { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-            .tag-red { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-            .tag-yellow { background: #fefce8; color: #ca8a04; border: 1px solid #fde68a; }
-            .tag-purple { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
-            .tag-gray { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
-            @page { margin: 15mm; }
+            @page { margin: 12mm 10mm; }
+            * { box-sizing: border-box; }
+            body { font-family: 'Inter', Arial, sans-serif; padding: 0; margin: 0; color: #1e293b; font-size: 10px; }
+            .header { margin-bottom: 14px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+            .header h2 { font-size: 15px; margin: 0 0 2px 0; color: #0f172a; }
+            .header .sub { font-size: 10px; color: #64748b; }
+            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-weight: 600; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; letter-spacing: 0.3px; font-size: 8px; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 9.5px; }
+            tr:nth-child(even) td { background: #f8fafc; }
+            td:first-child { text-align: center; color: #94a3b8; }
+            td:nth-child(2) { font-weight: 600; color: #1e40af; }
+            td:nth-child(8) { text-align: right; font-weight: 600; }
+            .status { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 600; }
+            .s-good { background: #f0fdf4; color: #16a34a; }
+            .s-hold, .s-pending { background: #fefce8; color: #ca8a04; }
+            .s-reject, .s-problem, .s-rusak { background: #fef2f2; color: #dc2626; }
+            .lokasi { background: #eff6ff; color: #2563eb; display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 8px; }
         </style>
     </head><body>
-        <h2>Roll Off Management</h2>
-        <div class="sub">${ids.length} item dipilih — dicetak pada ${new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'})}</div>
-        <table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>
+        <div class="header">
+            <h2>Roll Off Management</h2>
+            <div class="sub">${ids.length} item dipilih — dicetak pada ${new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'})}</div>
+        </div>
+        <table><thead><tr>${ths}</tr></thead><tbody>${rows}</tbody></table>
     </body></html>`;
 
     const w = window.open('', '_blank', 'width=900,height=700');
