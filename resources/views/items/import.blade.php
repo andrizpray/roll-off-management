@@ -37,7 +37,7 @@
         <h3 class="text-sm font-semibold text-gray-800 mb-1 flex items-center gap-2">
             <i class="fas fa-upload text-xs text-blue-500"></i>Upload File Excel
         </h3>
-        <p class="text-xs text-gray-400 mb-5">Upload file Excel (.xlsx) dengan sheet <strong>DATA</strong> untuk sync roll items. Sheet defect akan otomatis diimport juga.</p>
+        <p class="text-xs text-gray-400 mb-5">Upload file Excel. Sistem otomatis mendeteksi format — <strong>sheet DATA</strong> (sync lengkap) atau <strong>format detail</strong> (update field kosong + DetailLocation).</p>
 
         <form method="POST" action="{{ route('items.import.preview') }}" enctype="multipart/form-data" id="uploadForm">
             @csrf
@@ -73,37 +73,26 @@
     </div>
 
     <!-- Info Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="card p-4">
-            <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-plus text-green-500 text-xs"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-gray-800">Item Baru</p>
-                    <p class="text-xs text-gray-400 mt-0.5">Lot ID yang belum ada di database akan ditambahkan</p>
-                </div>
-            </div>
-        </div>
-        <div class="card p-4">
-            <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-pen text-amber-500 text-xs"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-gray-800">Item Diupdate</p>
-                    <p class="text-xs text-gray-400 mt-0.5">Lot ID yang sudah ada akan diupdate jika ada perubahan</p>
-                </div>
-            </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card p-4">
             <div class="flex items-start gap-3">
                 <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-database text-blue-500 text-xs"></i>
+                    <i class="fas fa-table text-blue-500 text-xs"></i>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold text-gray-800">Defect Sheets</p>
-                    <p class="text-xs text-gray-400 mt-0.5">Sheet "Barang Bermasalah 2025/2026" otomatis diimport</p>
+                    <p class="text-xs font-semibold text-gray-800">Format Sheet DATA</p>
+                    <p class="text-xs text-gray-400 mt-0.5">File dengan sheet "DATA" — sync lengkap semua field (upsert). Sheet defect otomatis diimport.</p>
+                </div>
+            </div>
+        </div>
+        <div class="card p-4">
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-file-lines text-purple-500 text-xs"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-gray-800">Format Detail (LotID, PaperType, dll)</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Hanya mengisi field yang masih kosong. <strong>DetailLocation</strong> → lokasi, <strong>UpdateDetailLocation</strong> → timestamp.</p>
                 </div>
             </div>
         </div>
@@ -120,6 +109,13 @@
                 <p class="text-xs text-gray-400 mt-0.5">{{ number_format($preview['total_rows']) }} baris dibaca dari file Excel</p>
             </div>
             <div class="flex gap-2">
+                <span class="tag {{ ($format ?? '') === 'detail' ? 'tag-purple' : 'tag-blue' }}">
+                    @if(($format ?? '') === 'detail')
+                        <i class="fas fa-file-lines mr-1"></i>Format Detail — Update Field Kosong
+                    @else
+                        <i class="fas fa-table mr-1"></i>Format DATA Sheet — Full Sync
+                    @endif
+                </span>
                 <form method="POST" action="{{ route('items.import') }}" class="inline">
                     @csrf
                     <button type="submit" class="btn btn-ghost px-4 py-2 text-xs font-medium rounded-lg">
@@ -184,6 +180,10 @@
                             <th class="sticky top-0 z-10">GSM</th>
                             <th class="sticky top-0 z-10">Width</th>
                             <th class="sticky top-0 z-10">Grade</th>
+                            <th class="sticky top-0 z-10">Lokasi</th>
+                            @if(($format ?? '') === 'detail')
+                            <th class="sticky top-0 z-10">Detail Lokasi</th>
+                            @endif
                             <th class="sticky top-0 z-10">Perubahan</th>
                         </tr>
                     </thead>
@@ -206,6 +206,10 @@
                             <td class="text-gray-700">{{ $item['gsm'] ?? '-' }}</td>
                             <td class="text-gray-700">{{ $item['width'] ?? '-' }}</td>
                             <td class="text-gray-700">{{ $item['grade'] ?? '-' }}</td>
+                            <td class="text-gray-700">{{ $item['location_id'] ?? '-' }}</td>
+                            @if(($format ?? '') === 'detail')
+                            <td class="text-gray-700 text-[10px]">{{ $item['detail_location'] ?? '-' }}</td>
+                            @endif
                             <td>
                                 @if($item['status'] === 'updated' && isset($item['changes']))
                                     <div class="space-y-0.5">
@@ -243,7 +247,11 @@
                 <div class="text-xs text-blue-700">
                     <i class="fas fa-info-circle mr-1"></i>
                     {{ number_format($preview['new']) }} item baru + {{ number_format($preview['updated']) }} update akan disimpan.
+                    @if(($format ?? '') !== 'detail')
                     Defect sheets juga akan diimport otomatis.
+                    @else
+                    Hanya field kosong yang akan diisi (tidak menimpa data).
+                    @endif
                 </div>
                 <form method="POST" action="{{ route('items.import.sync') }}" id="syncForm" onsubmit="return confirmSync()">
                     @csrf

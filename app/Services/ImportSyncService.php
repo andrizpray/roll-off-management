@@ -10,6 +10,292 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class ImportSyncService
 {
     /**
+     * Detect file format: DATA sheet vs detail format.
+     */
+    public function detectFormat(string $filePath): string
+    {
+        $reader = IOFactory::createReaderForFile($filePath);
+        $reader->setReadDataOnly(true);
+        $wb = $reader->load($filePath);
+
+        // Check for DATA sheet
+        if ($wb->getSheetByName('DATA')) {
+            $wb->disconnectWorksheets();
+            unset($wb);
+            return 'data_sheet';
+        }
+
+        // Check for detail format headers (LotID, PaperType, Gramature, RewID, etc.)
+        $sheet = $wb->getSheet(0);
+        $highestRow = $sheet->getHighestRow();
+        $highestCol = $sheet->getHighestColumn();
+
+        for ($row = 1; $row <= min(5, $highestRow); $row++) {
+            $headers = [];
+            for ($col = 1; $col <= $sheet->getHighestDataRow(); $col++) {
+                $val = $this->getCellValue($sheet, $col, $row);
+                if ($val) $headers[] = strtolower($val);
+            }
+            $detailKeys = ['lotid', 'lot_id', 'paper_type', 'papertype', 'gramature', 'gsm', 'rewid', 'rew_id'];
+            if (count(array_intersect($headers, $detailKeys)) >= 3) {
+                $wb->disconnectWorksheets();
+                unset($wb);
+                return 'detail';
+            }
+        }
+
+        $wb->disconnectWorksheets();
+        unset($wb);
+        throw new \Exception('Format file tidak dikenali. Pastikan file memiliki sheet "DATA" atau header kolom LotID/PaperType/Gramature.');
+    }
+
+    /**
+     * Get header row for detail format (scan first 5 rows).
+     */
+    private function findDetailHeaderRow($sheet): ?int
+    {
+        $detailKeys = ['lotid', 'lot_id', 'paper_type', 'papertype', 'gramature', 'gsm', 'rewid', 'rew_id'];
+        $highestRow = $sheet->getHighestRow();
+
+        for ($row = 1; $row <= min(5, $highestRow); $row++) {
+            $headers = [];
+            for ($col = 1; $col <= 20; $col++) {
+                $val = $this->getCellValue($sheet, $col, $row);
+                if ($val) $headers[] = strtolower($val);
+            }
+            if (count(array_intersect($headers, $detailKeys)) >= 3) {
+                return $row;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parse detail format Excel — return rows with normalized keys.
+     */
+    private function parseDetailRows($sheet): array
+    {
+        $headerRow = $this->findDetailHeaderRow($sheet);
+        if (!$headerRow) return [];
+
+        // Read headers
+        $colMap = [];
+        $highestCol = $sheet->getHighestColumn();
+        $colIndex = 1;
+        while (true) {
+            $val = $this->getCellValue($sheet, $colIndex, $headerRow);
+            if (!$val) break;
+            $colMap[strtolower(trim($val))] = $colIndex;
+            $colIndex++;
+        }
+
+        // Normalize key names
+        $keyMap = [
+            'lotid' => 'lot_id', 'lot_id' => 'lot_id', 'lot id' => 'lot_id',
+            'itemid' => 'item_id', 'item_id' => 'item_id', 'item id' => 'item_id',
+            'weight' => 'end_qty',
+            'papertype' => 'paper_type', 'paper_type' => 'paper type', 'paper type' => 'paper_type',
+            'gramature' => 'gsm', 'gsm' => 'gsm',
+            'plybond' => 'plybond',
+            'width' => 'width',
+            'rewid' => 'rew_id', 'rew_id' => 'rew_id', 'rew id' => 'rew_id',
+            'grade' => 'grade',
+            'comment' => 'comments', 'comments' => 'comments',
+            'diameter' => 'diameter',
+            'thickness' => 'thickness',
+            'locationid' => 'location_id', 'location_id' => 'location_id', 'location id' => 'location_id',
+            'detaillocation' => 'detail_location', 'detail_location' => 'detail_location', 'detail location' => 'detail_location',
+            'updatedetaillocation' => 'update_detail_location', 'update_detail_location' => 'update_detail_location',
+            'trtype' => 'tr_type', 'tr_type' => 'tr_type', 'tr type' => 'tr_type',
+            'transcode' => 'transcode',
+            'datetime_' => 'datetime',
+            'last_modified' => 'last_modified',
+        ];
+
+        $rows = [];
+        $highestRow = $sheet->getHighestRow();
+
+        for ($row = $headerRow + 1; $row <= $highestRow; $row++) {
+            $lotIdCol = $colMap['lot_id'] ?? $colMap['lotid'] ?? null;
+            if (!$lotIdCol) continue;
+
+            $lotId = $this->getCellValue($sheet, $lotIdCol, $row);
+            if (empty($lotId)) continue;
+
+            $rowData = [];
+            foreach ($colMap as $rawKey => $col) {
+                $normalizedKey = $keyMap[$rawKey] ?? $rawKey;
+                $rowData[$normalizedKey] = $this->getCellValue($sheet, $col, $row);
+            }
+
+            $rows[] = $rowData;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Preview detail format (no DB write).
+     */
+    public function previewDetailSheet(string $filePath): array
+    {
+        $reader = IOFactory::createReaderForFile($filePath);
+        $reader->setReadDataOnly(true);
+        $wb = $reader->load($filePath);
+
+        $sheet = $wb->getSheet(0);
+        $rows = $this->parseDetailRows($sheet);
+
+        $wb->disconnectWorksheets();
+        unset($wb);
+
+        $existingLotIds = RollItem::pluck('lot_id', 'lot_id')->toArray();
+        $items = [];
+        $newCount = 0;
+        $updatedCount = 0;
+        $unchangedCount = 0;
+
+        foreach ($rows as $row) {
+            $lotId = $row['lot_id'] ?? '';
+            if (empty($lotId)) continue;
+
+            $item = $this->mapDetailToRollItem($row);
+
+            if (isset($existingLotIds[$lotId])) {
+                $existing = RollItem::where('lot_id', $lotId)->first();
+                $changed = false;
+                $changes = [];
+
+                foreach ($item as $key => $val) {
+                    if (in_array($key, ['lot_id'])) continue;
+                    $oldVal = $existing->$key ?? null;
+                    // Only count as change if existing is empty and new has value
+                    if (empty($oldVal) || $oldVal === '-' || $oldVal === 'NULL') {
+                        if (!empty($val) && $val !== '-' && $val !== 'NULL') {
+                            $changed = true;
+                            $changes[$key] = ['old' => $oldVal, 'new' => $val];
+                        }
+                    }
+                }
+
+                if ($changed) {
+                    $item['status'] = 'updated';
+                    $item['changes'] = $changes;
+                    $updatedCount++;
+                } else {
+                    $item['status'] = 'unchanged';
+                    $unchangedCount++;
+                }
+            } else {
+                $item['status'] = 'new';
+                $newCount++;
+            }
+
+            $item['lot_id'] = $lotId;
+            // Keep detail_location for preview display
+            if (!empty($row['detail_location'])) {
+                $item['detail_location'] = $row['detail_location'];
+            }
+            if (!empty($row['update_detail_location'])) {
+                $item['update_detail_location'] = $row['update_detail_location'];
+            }
+            $items[] = $item;
+        }
+
+        return [
+            'total_rows' => count($rows),
+            'valid_rows' => count($items),
+            'skipped' => count($rows) - count($items),
+            'new' => $newCount,
+            'updated' => $updatedCount,
+            'unchanged' => $unchangedCount,
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * Sync detail format — update empty fields only, create if not exists.
+     */
+    public function syncDetailSheet(string $filePath): array
+    {
+        $reader = IOFactory::createReaderForFile($filePath);
+        $reader->setReadDataOnly(true);
+        $wb = $reader->load($filePath);
+
+        $sheet = $wb->getSheet(0);
+        $rows = $this->parseDetailRows($sheet);
+
+        $wb->disconnectWorksheets();
+        unset($wb);
+
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+
+        foreach ($rows as $row) {
+            $lotId = $row['lot_id'] ?? '';
+            if (empty($lotId)) { $skipped++; continue; }
+
+            $existing = RollItem::where('lot_id', $lotId)->first();
+            $data = $this->mapDetailToRollItem($row);
+
+            if ($existing) {
+                $changed = false;
+                foreach ($data as $key => $val) {
+                    if (in_array($key, ['lot_id'])) continue;
+                    $oldVal = $existing->$key ?? null;
+                    if ((empty($oldVal) || $oldVal === '-' || $oldVal === 'NULL') && !empty($val) && $val !== '-' && $val !== 'NULL') {
+                        $existing->$key = $val;
+                        $changed = true;
+                    }
+                }
+                if ($changed) {
+                    $existing->save();
+                    $updated++;
+                } else {
+                    $skipped++;
+                }
+            } else {
+                RollItem::create($data);
+                $created++;
+            }
+        }
+
+        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
+    }
+
+    /**
+     * Map detail format row to roll_items fields.
+     */
+    private function mapDetailToRollItem(array $row): array
+    {
+        $clean = function ($val) {
+            if ($val === null || trim((string) $val) === '' || trim((string) $val) === 'NULL') return null;
+            if (trim((string) $val) === '-') return null;
+            return trim((string) $val);
+        };
+
+        // Use DetailLocation for location_id if available, fallback to LocationID
+        $location = $clean($row['detail_location'] ?? null) ?? $clean($row['location_id'] ?? null);
+
+        return [
+            'lot_id' => $clean($row['lot_id']),
+            'item_id' => $clean($row['item_id']),
+            'end_qty' => $clean($row['end_qty']),
+            'rew_id' => $clean($row['rew_id']),
+            'paper_type' => $clean($row['paper_type']),
+            'gsm' => $clean($row['gsm']),
+            'plybond' => $clean($row['plybond']),
+            'width' => $clean($row['width']),
+            'diameter' => $clean($row['diameter']),
+            'thickness' => $clean($row['thickness']),
+            'grade' => $clean($row['grade']),
+            'comments' => $clean($row['comments']),
+            'location_id' => $location,
+        ];
+    }
+
+    /**
      * Parse DATA sheet from Excel and return preview (no DB write).
      * Returns: ['total_rows', 'valid_rows', 'skipped', 'new', 'updated', 'unchanged', 'items']
      */

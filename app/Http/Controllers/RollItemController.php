@@ -220,14 +220,25 @@ class RollItemController extends Controller
 
         try {
             $service = new ImportSyncService();
+            $format = $service->detectFormat($fullPath);
+
+            session(['import_file_path' => $path, 'import_format' => $format]);
+
+            if ($format === 'detail') {
+                $preview = $service->previewDetailSheet($fullPath);
+                return view('items.import', [
+                    'preview' => $preview,
+                    'fileName' => $file->getClientOriginalName(),
+                    'format' => 'detail',
+                ]);
+            }
+
+            // data_sheet format (original)
             $preview = $service->previewDataSheet($fullPath);
-
-            // Store path in session for sync step
-            session(['import_file_path' => $path]);
-
             return view('items.import', [
                 'preview' => $preview,
                 'fileName' => $file->getClientOriginalName(),
+                'format' => 'data_sheet',
             ]);
         } catch (\Exception $e) {
             Storage::delete($path);
@@ -238,6 +249,8 @@ class RollItemController extends Controller
     public function importSync(Request $request)
     {
         $path = session('import_file_path');
+        $format = session('import_format', 'data_sheet');
+
         if (!$path || !Storage::exists($path)) {
             return redirect()->route('items.import')->with('error', 'File tidak ditemukan. Silakan upload ulang.');
         }
@@ -246,22 +259,28 @@ class RollItemController extends Controller
 
         try {
             ini_set('memory_limit', '512M');
-
             $service = new ImportSyncService();
-            $result = $service->syncDataSheet($fullPath);
-            $defectResult = $service->syncDefectSheets($fullPath);
+
+            if ($format === 'detail') {
+                $result = $service->syncDetailSheet($fullPath);
+                $msg = "DATA: {$result['created']} baru, {$result['updated']} diupdate, {$result['skipped']} skip";
+            } else {
+                $result = $service->syncDataSheet($fullPath);
+                $defectResult = $service->syncDefectSheets($fullPath);
+                $msg = implode(' | ', [
+                    "DATA: {$result['created']} baru, {$result['updated']} diupdate, {$result['skipped']} skip",
+                    "Defect 2025: {$defectResult['defect_2025']}",
+                    "Defect 2026: {$defectResult['defect_2026']}",
+                ]);
+            }
 
             Storage::delete($path);
-            session()->forget('import_file_path');
+            session()->forget(['import_file_path', 'import_format']);
 
-            return redirect()->route('items.import')->with('success', implode(' | ', [
-                "DATA: {$result['created']} baru, {$result['updated']} diupdate, {$result['skipped']} skip",
-                "Defect 2025: {$defectResult['defect_2025']}",
-                "Defect 2026: {$defectResult['defect_2026']}",
-            ]));
+            return redirect()->route('items.import')->with('success', $msg);
         } catch (\Exception $e) {
             Storage::delete($path);
-            session()->forget('import_file_path');
+            session()->forget(['import_file_path', 'import_format']);
             return redirect()->route('items.import')->with('error', 'Gagal sync: ' . $e->getMessage());
         }
     }
