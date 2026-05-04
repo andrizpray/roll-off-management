@@ -63,6 +63,78 @@ class RollItem extends Model
     }
 
     /**
+     * Parse paper_type from description.
+     */
+    public function getParsedPaperTypeAttribute(): ?string
+    {
+        if (!empty($this->paper_type) && $this->paper_type !== '-') {
+            return $this->paper_type;
+        }
+        $parsed = self::parseDescriptionStatic($this->description);
+        return $parsed['paper_type'];
+    }
+
+    /**
+     * Parse GSM from description.
+     */
+    public function getParsedGsmAttribute(): ?string
+    {
+        if (!empty($this->gsm) && $this->gsm !== '-') {
+            return (string) $this->gsm;
+        }
+        $parsed = self::parseDescriptionStatic($this->description);
+        return $parsed['gsm'] !== null ? (string) $parsed['gsm'] : null;
+    }
+
+    /**
+     * Parse description to extract paper_type and gsm (static helper).
+     */
+    public static function parseDescriptionStatic(?string $description): array
+    {
+        $result = ['paper_type' => null, 'gsm' => null, 'width' => null];
+        if (empty($description) || trim($description) === '' || trim($description) === '-') {
+            return $result;
+        }
+        $desc = trim($description);
+
+        // Extract plybond: E followed by digits
+        $desc = preg_replace('/\bE\d{2,4}\b/i', ' ', $desc);
+
+        // Extract width: number followed by "mm"
+        if (preg_match('/(\d{3,4})\s*mm\b/i', $desc, $m)) {
+            $result['width'] = (int) $m[1];
+            $desc = preg_replace('/\d{3,4}\s*mm\b/i', ' ', $desc);
+        }
+
+        // Handle "350g" format
+        if (preg_match('/(\d{2,4})g\b/i', $desc, $mg)) {
+            $result['gsm'] = (int) $mg[1];
+            $desc = preg_replace('/\d{2,4}g\b/i', ' ', $desc);
+        }
+
+        $desc = preg_replace('/\s+/', ' ', trim($desc));
+
+        // Extract paper_type + gsm: "B KRAFT BK125 690"
+        if (preg_match('/^(.*?)\s*([A-Za-z]+)(\d{2,4})\s*(\d{0,4}?)\s*$/i', $desc, $m)) {
+            $prefix = trim($m[1]);
+            $code = $m[2];
+            $gsm = (int) $m[3];
+            $trailing = trim($m[4]);
+
+            $result['paper_type'] = ($prefix !== '' ? $prefix . ' ' : '') . $code;
+            if ($result['gsm'] === null) {
+                $result['gsm'] = $gsm;
+            }
+            // Trailing number = width
+            if ($result['width'] === null && $trailing !== '' && is_numeric($trailing) && (int) $trailing > 0) {
+                $result['width'] = (int) $trailing;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Nama kolom sumber lokasi
      */
     public function getCurrentLocationSourceAttribute(): ?string

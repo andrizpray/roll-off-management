@@ -37,7 +37,7 @@
             </span>
             <i class="fas fa-chevron-down text-xs transition-transform" id="filterChevron" class="text-gray-400"></i>
         </button>
-        <div id="advFilters" class="hidden {{ (request('paper_type') || request('gsm') || request('width') || request('receiving_2026') || request('status') || request('grade') || request('sort')) ? '' : 'hidden' }}">
+        <div id="advFilters" {{ (request('paper_type') || request('gsm') || request('width') || request('receiving_2026') || request('status') || request('grade') || request('sort')) ? '' : 'class="hidden"' }}>
             <div class="px-4 pb-4 pt-1">
                 <form method="GET" action="{{ route('items.index') }}" id="filterForm">
                     @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
@@ -158,7 +158,7 @@
                             <a href="{{ route('items.show', $item->id) }}" class="font-semibold no-underline hover:underline" style="color: #3b82f6;" onclick="event.stopPropagation();">{{ $item->lot_id }}</a>
                         </td>
                         <td class="truncate" style="max-width: 140px;" title="{{ $item->description }}">{{ $item->description ?? '-' }}</td>
-                        <td>{{ $item->gsm ?? '-' }}</td>
+                        <td>{{ $item->parsed_gsm ?? '-' }}</td>
                         <td><span class="font-medium text-gray-700">{{ $item->grade ?? '-' }}</span></td>
                         <td>{{ $item->width ?? '-' }}</td>
                         <td class="text-xs text-gray-500">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</td>
@@ -236,7 +236,7 @@
                 @endif
                 <div class="flex justify-between text-xs mb-1.5">
                     <span class="text-gray-400">Spec</span>
-                    <span class="text-gray-600">{{ $item->gsm ?? '-' }} / {{ $item->width ?? '-' }} mm</span>
+                    <span class="text-gray-600">{{ $item->parsed_gsm ?? '-' }} / {{ $item->width ?? '-' }} mm</span>
                 </div>
                 @if($item->grade)
                     <div class="flex justify-between text-xs mb-1.5">

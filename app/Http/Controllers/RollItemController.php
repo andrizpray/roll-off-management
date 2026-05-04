@@ -29,39 +29,32 @@ class RollItemController extends Controller
             });
         }
 
-        // Filter: Paper Type
+        // Filter: Paper Type — search in description since column is mostly NULL
         if ($paperType = $request->input('paper_type')) {
-            $query->where('paper_type', $paperType);
+            $query->where('description', 'LIKE', "%{$paperType}%");
         }
 
-        // Filter: GSM
+        // Filter: GSM — search in description since column is mostly NULL
         if ($gsm = $request->input('gsm')) {
-            $query->where('gsm', $gsm);
+            // Match GSM as part of code+number (e.g., "BK125") or standalone
+            $query->where(function ($q) use ($gsm) {
+                $q->where('description', 'REGEXP', '[A-Za-z]+' . preg_quote($gsm) . '[^0-9]')
+                  ->orWhere('description', 'REGEXP', '[A-Za-z]+' . preg_quote($gsm) . '$')
+                  ->orWhere('gsm', $gsm);
+            });
         }
 
         // Filter: Width
         if ($width = $request->input('width')) {
-            $query->where('width', $width);
+            $query->where(function ($q) use ($width) {
+                $q->where('width', $width)
+                  ->orWhere('description', 'REGEXP', preg_quote($width) . '$');
+            });
         }
 
         // Filter: Receiving 2026 (lokasi)
         if ($location = $request->input('receiving_2026')) {
             $query->where('receiving_2026', $location);
-        }
-
-        // Filter: SO Desember
-        if ($soDes = $request->input('so_desember')) {
-            $query->where('so_desember', 'LIKE', "%{$soDes}%");
-        }
-
-        // Filter: SO Maret 2026
-        if ($soMar = $request->input('so_maret_2026')) {
-            $query->where('so_maret_2026', 'LIKE', "%{$soMar}%");
-        }
-
-        // Filter: PIC 2026
-        if ($pic = $request->input('pic_2026')) {
-            $query->where('pic_2026', 'LIKE', "%{$pic}%");
         }
 
         // Filter: Status
@@ -86,10 +79,50 @@ class RollItemController extends Controller
 
         $items = $query->paginate(50)->withQueryString();
 
-        // Dropdowns
-        $paperTypes = RollItem::whereNotNull('paper_type')->where('paper_type', '!=', '')->distinct()->orderBy('paper_type')->pluck('paper_type');
-        $gsms = RollItem::whereNotNull('gsm')->where('gsm', '!=', '')->distinct()->orderBy('gsm')->pluck('gsm');
-        $widths = RollItem::whereNotNull('width')->distinct()->orderBy('width')->pluck('width');
+        // Dropdowns — parse from description since paper_type/gsm columns are NULL
+        $descriptions = \DB::table('roll_items')
+            ->selectRaw('description, COUNT(*) as cnt')
+            ->whereNotNull('description')
+            ->where('description', '!=', '')
+            ->where('description', '!=', '-')
+            ->groupBy('description')
+            ->get();
+
+        $ptMap = [];
+        $gsmMap = [];
+        $widthMap = [];
+        foreach ($descriptions as $row) {
+            $parsed = RollItem::parseDescriptionStatic($row->description);
+            if (!empty($parsed['paper_type'])) {
+                $ptMap[$parsed['paper_type']] = ($ptMap[$parsed['paper_type']] ?? 0) + (int) $row->cnt;
+            }
+            if (!empty($parsed['gsm'])) {
+                $gsmMap[(string) $parsed['gsm']] = ($gsmMap[(string) $parsed['gsm']] ?? 0) + (int) $row->cnt;
+            }
+            if (!empty($parsed['width'])) {
+                $widthMap[(string) $parsed['width']] = ($widthMap[(string) $parsed['width']] ?? 0) + (int) $row->cnt;
+            }
+        }
+
+        // Also add any directly filled values
+        foreach (['paper_type' => &$ptMap, 'gsm' => &$gsmMap, 'width' => &$widthMap] as $col => &$map) {
+            $direct = \DB::table('roll_items')
+                ->selectRaw("$col, COUNT(*) as cnt")
+                ->whereNotNull($col)->where($col, '!=', '')->where($col, '!=', '-')
+                ->groupBy($col)->get();
+            foreach ($direct as $d) {
+                $map[(string) $d->$col] = ($map[(string) $d->$col] ?? 0) + (int) $d->cnt;
+            }
+        }
+        unset($map);
+
+        arsort($ptMap);
+        arsort($gsmMap);
+        arsort($widthMap);
+
+        $paperTypes = collect(array_keys(array_slice($ptMap, 0, 30, true)));
+        $gsms = collect(array_keys(array_slice($gsmMap, 0, 20, true)));
+        $widths = collect(array_keys(array_slice($widthMap, 0, 20, true)));
         $locations = RollItem::whereNotNull('receiving_2026')->where('receiving_2026', '!=', '-')->distinct()->orderBy('receiving_2026')->pluck('receiving_2026');
         $statuses = RollItem::whereNotNull('status_barang')->where('status_barang', '!=', '-')->distinct()->orderBy('status_barang')->pluck('status_barang');
         $grades = RollItem::whereNotNull('grade')->where('grade', '!=', '-')->where('grade', '!=', '')->distinct()->orderBy('grade')->pluck('grade');
