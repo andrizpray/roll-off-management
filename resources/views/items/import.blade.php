@@ -126,7 +126,7 @@
         </div>
 
         <!-- Stat Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
             <div class="stat-card blue card p-4 text-center">
                 <div class="text-2xl font-bold text-gray-900">{{ number_format($preview['valid_rows']) }}</div>
                 <div class="text-xs text-gray-400 mt-1">Valid Rows</div>
@@ -143,7 +143,48 @@
                 <div class="text-2xl font-bold text-gray-400">{{ number_format($preview['unchanged']) }}</div>
                 <div class="text-xs text-gray-400 mt-1">Tidak Berubah</div>
             </div>
+            @if(($preview['delete_count'] ?? 0) > 0)
+            <div class="stat-card red card p-4 text-center">
+                <div class="text-2xl font-bold text-red-600">{{ number_format($preview['delete_count']) }}</div>
+                <div class="text-xs text-gray-400 mt-1">Akan Dihapus</div>
+            </div>
+            @endif
         </div>
+
+        @if(($preview['delete_count'] ?? 0) > 0)
+        <!-- Deletion Warning -->
+        <div class="p-4 rounded-xl bg-red-50 border border-red-200 mb-5">
+            <div class="flex items-start gap-2 mb-3">
+                <i class="fas fa-triangle-exclamation text-red-500 mt-0.5"></i>
+                <div>
+                    <p class="text-sm font-semibold text-red-700">{{ number_format($preview['delete_count']) }} Lot ID akan dihapus</p>
+                    <p class="text-xs text-red-500 mt-0.5">Lot ID berikut ada di database tapi <strong>tidak ditemukan</strong> di file import. Data roll item beserta defect terkait akan otomatis dihapus.</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-red-200" style="max-height: 200px; overflow-y: auto;">
+                <table class="data-table text-xs">
+                    <thead>
+                        <tr>
+                            <th class="sticky top-0 z-10 bg-red-100">Lot ID</th>
+                            <th class="sticky top-0 z-10 bg-red-100">Paper Type</th>
+                            <th class="sticky top-0 z-10 bg-red-100">GSM</th>
+                            <th class="sticky top-0 z-10 bg-red-100">Width</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(($preview['to_delete'] ?? []) as $del)
+                        <tr class="bg-red-50/50">
+                            <td class="font-mono font-semibold text-red-700">{{ $del['lot_id'] }}</td>
+                            <td class="text-red-600">{{ $del['paper_type'] ?? '-' }}</td>
+                            <td class="text-red-600">{{ $del['gsm'] ?? '-' }}</td>
+                            <td class="text-red-600">{{ $del['width'] ?? '-' }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
 
         @if($preview['skipped'] > 0)
             <div class="p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-xs text-yellow-700 mb-5 flex items-center gap-2">
@@ -242,11 +283,16 @@
         @endif
 
         <!-- Sync Button -->
-        @if($preview['new'] > 0 || $preview['updated'] > 0)
+        @if($preview['new'] > 0 || $preview['updated'] > 0 || ($preview['delete_count'] ?? 0) > 0)
             <div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200">
                 <div class="text-xs text-blue-700">
                     <i class="fas fa-info-circle mr-1"></i>
+                    @if($preview['new'] > 0 || $preview['updated'] > 0)
                     {{ number_format($preview['new']) }} item baru + {{ number_format($preview['updated']) }} update akan disimpan.
+                    @endif
+                    @if(($preview['delete_count'] ?? 0) > 0)
+                    <span class="text-red-600 font-semibold">{{ number_format($preview['delete_count']) }} item akan dihapus</span> (tidak ada di file).
+                    @endif
                     @if(($format ?? '') !== 'detail')
                     Defect sheets juga akan diimport otomatis.
                     @else

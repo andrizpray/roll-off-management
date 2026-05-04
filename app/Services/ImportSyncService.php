@@ -202,6 +202,20 @@ class ImportSyncService
             $items[] = $item;
         }
 
+        // Detect lot_ids that exist in DB but NOT in the imported file
+        $fileLotIds = array_column($items, 'lot_id');
+        $toBeDeleted = RollItem::whereNotIn('lot_id', $fileLotIds)
+            ->select('lot_id', 'paper_type', 'gsm', 'width')
+            ->orderBy('lot_id')
+            ->get()
+            ->map(fn($r) => [
+                'lot_id' => $r->lot_id,
+                'paper_type' => $r->paper_type,
+                'gsm' => $r->gsm,
+                'width' => $r->width,
+            ])
+            ->toArray();
+
         return [
             'total_rows' => count($rows),
             'valid_rows' => count($items),
@@ -210,11 +224,14 @@ class ImportSyncService
             'updated' => $updatedCount,
             'unchanged' => $unchangedCount,
             'items' => $items,
+            'to_delete' => $toBeDeleted,
+            'delete_count' => count($toBeDeleted),
         ];
     }
 
     /**
      * Sync detail format — update empty fields only, create if not exists.
+     * Also deletes roll_items (and their defect_items) that are NOT in the file.
      */
     public function syncDetailSheet(string $filePath): array
     {
@@ -231,10 +248,13 @@ class ImportSyncService
         $created = 0;
         $updated = 0;
         $skipped = 0;
+        $fileLotIds = [];
 
         foreach ($rows as $row) {
             $lotId = $row['lot_id'] ?? '';
             if (empty($lotId)) { $skipped++; continue; }
+
+            $fileLotIds[] = $lotId;
 
             $existing = RollItem::where('lot_id', $lotId)->first();
             $data = $this->mapDetailToRollItem($row);
@@ -261,7 +281,18 @@ class ImportSyncService
             }
         }
 
-        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped];
+        // Delete roll_items + defect_items NOT in the imported file
+        $deleted = 0;
+        $uniqueFileLotIds = array_unique($fileLotIds);
+        $toDelete = RollItem::whereNotIn('lot_id', $uniqueFileLotIds)->pluck('lot_id')->toArray();
+        if (!empty($toDelete)) {
+            // Delete related defect_items first
+            DefectItem::whereIn('lot_id', $toDelete)->delete();
+            // Then delete roll_items
+            $deleted = RollItem::whereIn('lot_id', $toDelete)->delete();
+        }
+
+        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped, 'deleted' => $deleted];
     }
 
     /**

@@ -263,7 +263,11 @@ class RollItemController extends Controller
 
             if ($format === 'detail') {
                 $result = $service->syncDetailSheet($fullPath);
-                $msg = "DATA: {$result['created']} baru, {$result['updated']} diupdate, {$result['skipped']} skip";
+                $parts = ["DATA: {$result['created']} baru, {$result['updated']} diupdate, {$result['skipped']} skip"];
+                if ($result['deleted'] > 0) {
+                    $parts[] = "{$result['deleted']} dihapus (tidak ada di file)";
+                }
+                $msg = implode(' | ', $parts);
             } else {
                 $result = $service->syncDataSheet($fullPath);
                 $defectResult = $service->syncDefectSheets($fullPath);
