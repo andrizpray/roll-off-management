@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/notifications', [DashboardController::class, 'notifications'])->name('notifications');
+Route::get('/notifications/page', [DashboardController::class, 'notificationsPage'])->name('notifications.page');
 
 Route::get('/items', [RollItemController::class, 'index'])->name('items.index');
 Route::get('/items/create', [RollItemController::class, 'create'])->name('items.create');
@@ -23,3 +24,6 @@ Route::delete('/items/{id}', [RollItemController::class, 'destroy'])->name('item
 Route::get('/defects', [DefectItemController::class, 'index'])->name('defects.index');
 Route::get('/defects/export', [DefectItemController::class, 'export'])->name('defects.export');
 Route::get('/defects/summary-report', [DefectItemController::class, 'summaryReport'])->name('defects.summary');
+Route::get('/defects/import', [DefectItemController::class, 'importForm'])->name('defects.import');
+Route::post('/defects/import', [DefectItemController::class, 'import'])->name('defects.import.post');
+Route::get('/defects/import/template', [DefectItemController::class, 'importTemplate'])->name('defects.import.template');

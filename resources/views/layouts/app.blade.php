@@ -451,10 +451,13 @@
                             </div>
 
                             <!-- Footer -->
-                            <div id="notifFooter" class="hidden px-4 py-2.5 border-t border-gray-100 bg-gray-50 text-center">
-                                <button onclick="loadNotif()" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                            <div id="notifFooter" class="hidden px-4 py-2.5 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+                                <button onclick="loadNotif()" class="text-xs text-gray-400 hover:text-gray-600 font-medium">
                                     <i class="fas fa-arrows-rotate mr-1"></i>Refresh
                                 </button>
+                                <a href="/notifications/page" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                                    Lihat Semua <i class="fas fa-arrow-right ml-0.5"></i>
+                                </a>
                             </div>
                         </div>
                     </div>

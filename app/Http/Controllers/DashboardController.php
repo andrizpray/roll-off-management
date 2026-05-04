@@ -63,4 +63,11 @@ class DashboardController extends Controller
         $service = new NotificationService();
         return response()->json($service->getNotifications());
     }
+
+    public function notificationsPage()
+    {
+        $service = new NotificationService();
+        $data = $service->getAllNotifications();
+        return view('notifications.index', $data);
+    }
 }

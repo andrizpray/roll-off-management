@@ -7,6 +7,9 @@ use App\Exports\SummaryReportExport;
 use App\Models\DefectItem;
 use App\Models\RollItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DefectItemController extends Controller
@@ -126,5 +129,89 @@ class DefectItemController extends Controller
 
         ini_set('memory_limit', '512M');
         return Excel::download(new SummaryReportExport($year, $month), $filename);
+    }
+
+    public function importForm()
+    {
+        return view('defects.import');
+    }
+
+    public function importTemplate()
+    {
+        $headers = [
+            'lot_id',
+            'reason',
+            'category',
+            'defect_date',
+        ];
+
+        return response()->streamDownload(function () use ($headers) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+            fputcsv($file, ['LOT-001', 'WRAP BREAK', 'WRAPPING', '2026-05-04']);
+            fputcsv($file, ['LOT-002', 'TEAR', 'PROCESS', '2026-05-04']);
+            fclose($file);
+        }, 'template-defect-import.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,xlsx,xls|max:5120',
+            'year' => 'required|integer|min:2020|max:2030',
+        ]);
+
+        $year = $request->input('year');
+        $file = $request->file('file');
+        $path = $file->getRealPath();
+
+        $rows = Excel::toCollection(new class implements WithHeadingRow, ToCollection {
+            public function collection(\Illuminate\Support\Collection $rows) { return $rows; }
+        }, $path)->first();
+
+        if (!$rows || $rows->isEmpty()) {
+            return back()->with('error', 'File kosong atau tidak dapat dibaca.');
+        }
+
+        $imported = 0;
+        $skipped = 0;
+        $notFound = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $row) {
+                $lotId = trim((string) ($row['lot_id'] ?? $row['Lot Id'] ?? $row['lot'] ?? ''));
+                if ($lotId === '') {
+                    $skipped++;
+                    continue;
+                }
+
+                // Auto-fill from roll_items
+                $rollItem = RollItem::where('lot_id', $lotId)->first();
+
+                DefectItem::create([
+                    'year'         => $year,
+                    'lot_id'       => $lotId,
+                    'rew_id'       => $row['rew_id'] ?? $rollItem->rew_id ?? null,
+                    'paper_type'   => $row['paper_type'] ?? $rollItem->paper_type ?? null,
+                    'gsm'          => $row['gsm'] ?? $rollItem->gsm ?? null,
+                    'plybond'      => $row['plybond'] ?? $rollItem->plybond ?? null,
+                    'width'        => $row['width'] ?? $rollItem->width ?? null,
+                    'reason'       => trim((string) ($row['reason'] ?? '')) ?: null,
+                    'category'     => trim((string) ($row['category'] ?? '')) ?: null,
+                    'defect_date'  => $row['defect_date'] ?? date('Y-m-d'),
+                    'month'        => $row['month'] ?? null,
+                    'tr_type'      => $row['tr_type'] ?? null,
+                    'keterangan'   => $row['keterangan'] ?? ($rollItem && $rollItem->comments && $rollItem->comments !== '-' ? $rollItem->comments : null),
+                ]);
+                $imported++;
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->with('error', 'Import gagal: ' . $e->getMessage());
+        }
+
+        return back()->with('success', "Berhasil import {$imported} defect item." . ($skipped > 0 ? " {$skipped} baris dilewati (lot_id kosong)." : ''));
     }
 }

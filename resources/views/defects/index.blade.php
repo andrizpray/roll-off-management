@@ -160,6 +160,9 @@
     <div class="flex items-center justify-between text-xs text-gray-400">
         <span><i class="fas fa-list mr-1"></i>{{ number_format($defects->total()) }} items</span>
         <div class="flex items-center gap-2">
+            <a href="{{ route('defects.import') }}" class="btn btn-primary flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem; background: #7c3aed;">
+                <i class="fas fa-file-import"></i> Import
+            </a>
             <a href="{{ route('defects.export', request()->except('page')) }}" class="btn btn-primary flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem;">
                 <i class="fas fa-file-excel"></i> Export Excel
             </a>
