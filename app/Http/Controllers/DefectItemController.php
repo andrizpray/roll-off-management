@@ -368,4 +368,220 @@ class DefectItemController extends Controller
             'tr_type'      => $v(['TrType', 'tr_type', 'tr type']),
         ];
     }
+
+    /**
+     * Parse RollItem description to extract paper_type, gsm, plybond, width.
+     *
+     * Examples:
+     *   "B KRAFT BK125 E150 690"        → paper_type="B KRAFT BK", gsm=125, plybond=150, width=690
+     *   "Grey Board GB350 E150 880"     → paper_type="Grey Board GB", gsm=350, plybond=150, width=880
+     *   "B Kraft BK120 E150 210"        → paper_type="B Kraft BK", gsm=120, plybond=150, width=210
+     *   "BK150 880mm"                   → paper_type="BK", gsm=150, width=880
+     */
+    private function parseDescription(?string $description): array
+    {
+        $result = [
+            'paper_type' => null,
+            'gsm'        => null,
+            'plybond'    => null,
+            'width'      => null,
+        ];
+
+        if (empty($description) || trim($description) === '' || trim($description) === '-') {
+            return $result;
+        }
+
+        $desc = trim($description);
+
+        // 1. Extract plybond: E followed by digits (e.g., E150)
+        if (preg_match('/E(\d+)/i', $desc, $m)) {
+            $result['plybond'] = (int) $m[1];
+            $desc = str_ireplace($m[0], ' ', $desc);
+        }
+
+        // 2. Extract width: number followed by "mm" (e.g., 880mm)
+        if (preg_match('/(\d{3,4})mm/i', $desc, $m)) {
+            $result['width'] = (int) $m[1];
+            $desc = str_ireplace($m[0], ' ', $desc);
+        }
+
+        // 3. Extract paper_type and gsm:
+        //    Pattern: text up to the first digit sequence attached to it
+        //    e.g. "Grey Board GB350" → paper_type="Grey Board GB", gsm=350
+        //    e.g. "B KRAFT BK125"    → paper_type="B KRAFT BK", gsm=125
+        if (preg_match('/^(.+?)\s*(\d{2,4})\s*$/i', trim($desc), $m)) {
+            $result['paper_type'] = trim($m[1]);
+            $result['gsm'] = (int) $m[2];
+            $desc = '';
+        }
+
+        // 4. If no gsm found yet, check for trailing standalone 3-digit number as width
+        if ($result['width'] === null && preg_match('/(\d{3,4})\s*$/i', trim($desc), $m)) {
+            $result['width'] = (int) $m[1];
+        }
+
+        return $result;
+    }
+
+    /**
+     * AJAX lookup: return RollItem data as JSON for a given lot_id
+     */
+    public function lookup(Request $request)
+    {
+        $lotId = $request->input('lot_id');
+
+        if (empty($lotId)) {
+            return response()->json(['found' => false]);
+        }
+
+        $roll = RollItem::where('lot_id', $lotId)->first();
+
+        if (!$roll) {
+            return response()->json(['found' => false]);
+        }
+
+        // Try to parse from description first, then fall back to direct fields
+        $parsed = $this->parseDescription($roll->description);
+
+        return response()->json([
+            'found'      => true,
+            'lot_id'     => $roll->lot_id,
+            'rew_id'     => $roll->rew_id,
+            'paper_type' => $roll->paper_type ?? $parsed['paper_type'],
+            'gsm'        => $roll->gsm ?? $parsed['gsm'],
+            'plybond'    => $roll->plybond ?? $parsed['plybond'],
+            'width'      => $roll->width ?? $parsed['width'],
+            'description'=> $roll->description,
+        ]);
+    }
+
+    /**
+     * Show the create form
+     */
+    public function create()
+    {
+        $defect = null;
+        $years = collect(range(date('Y'), 2020))->sortDesc()->values();
+        $reasons = DefectItem::whereNotNull('reason')->distinct()->orderBy('reason')->pluck('reason');
+        $months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+
+        return view('defects.form', compact('defect', 'years', 'reasons', 'months'));
+    }
+
+    /**
+     * Store a new defect item
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'lot_id'      => 'nullable|string|max:100',
+            'year'        => 'required|integer|min:2020|max:2030',
+            'rew_id'      => 'nullable|string|max:100',
+            'paper_type'  => 'nullable|string|max:200',
+            'gsm'         => 'nullable|numeric',
+            'plybond'     => 'nullable|numeric',
+            'width'       => 'nullable|numeric',
+            'reason'      => 'nullable|string|max:200',
+            'reason_custom'=> 'nullable|string|max:200',
+            'category'    => 'nullable|string|max:100',
+            'defect_date' => 'nullable|date',
+            'month'       => 'nullable|string|max:20',
+            'tr_type'     => 'nullable|string|max:50',
+            'keterangan'  => 'nullable|string|max:500',
+        ]);
+
+        // If custom reason provided, use it instead
+        if (!empty($validated['reason_custom'])) {
+            $validated['reason'] = $validated['reason_custom'];
+        }
+        unset($validated['reason_custom']);
+
+        // Auto-fill from RollItem when paper_type/gsm is empty and lot_id is provided
+        if (!empty($validated['lot_id']) && (empty($validated['paper_type']) || empty($validated['gsm']))) {
+            $roll = RollItem::where('lot_id', $validated['lot_id'])->first();
+
+            if ($roll) {
+                $parsed = $this->parseDescription($roll->description);
+
+                if (empty($validated['paper_type'])) {
+                    $validated['paper_type'] = $roll->paper_type ?? $parsed['paper_type'];
+                }
+                if (empty($validated['gsm'])) {
+                    $validated['gsm'] = $roll->gsm ?? $parsed['gsm'];
+                }
+                if (empty($validated['plybond'])) {
+                    $validated['plybond'] = $roll->plybond ?? $parsed['plybond'];
+                }
+                if (empty($validated['width'])) {
+                    $validated['width'] = $roll->width ?? $parsed['width'];
+                }
+                if (empty($validated['rew_id'])) {
+                    $validated['rew_id'] = $roll->rew_id;
+                }
+            }
+        }
+
+        DefectItem::create($validated);
+
+        return redirect()->route('defects.index')->with('success', 'Defect item berhasil ditambahkan.');
+    }
+
+    /**
+     * Show the edit form
+     */
+    public function edit($id)
+    {
+        $defect = DefectItem::findOrFail($id);
+        $years = collect(range(date('Y'), 2020))->sortDesc()->values();
+        $reasons = DefectItem::whereNotNull('reason')->distinct()->orderBy('reason')->pluck('reason');
+        $months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+
+        return view('defects.form', compact('defect', 'years', 'reasons', 'months'));
+    }
+
+    /**
+     * Update an existing defect item
+     */
+    public function update(Request $request, $id)
+    {
+        $defect = DefectItem::findOrFail($id);
+
+        $validated = $request->validate([
+            'lot_id'      => 'nullable|string|max:100',
+            'year'        => 'required|integer|min:2020|max:2030',
+            'rew_id'      => 'nullable|string|max:100',
+            'paper_type'  => 'nullable|string|max:200',
+            'gsm'         => 'nullable|numeric',
+            'plybond'     => 'nullable|numeric',
+            'width'       => 'nullable|numeric',
+            'reason'      => 'nullable|string|max:200',
+            'reason_custom'=> 'nullable|string|max:200',
+            'category'    => 'nullable|string|max:100',
+            'defect_date' => 'nullable|date',
+            'month'       => 'nullable|string|max:20',
+            'tr_type'     => 'nullable|string|max:50',
+            'keterangan'  => 'nullable|string|max:500',
+        ]);
+
+        // If custom reason provided, use it instead
+        if (!empty($validated['reason_custom'])) {
+            $validated['reason'] = $validated['reason_custom'];
+        }
+        unset($validated['reason_custom']);
+
+        $defect->update($validated);
+
+        return redirect()->route('defects.index')->with('success', 'Defect item berhasil diupdate.');
+    }
+
+    /**
+     * Delete a defect item
+     */
+    public function destroy($id)
+    {
+        $defect = DefectItem::findOrFail($id);
+        $defect->delete();
+
+        return redirect()->route('defects.index')->with('success', 'Defect item berhasil dihapus.');
+    }
 }

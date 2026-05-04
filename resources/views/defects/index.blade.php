@@ -160,6 +160,9 @@
     <div class="flex items-center justify-between text-xs text-gray-400">
         <span><i class="fas fa-list mr-1"></i>{{ number_format($defects->total()) }} items</span>
         <div class="flex items-center gap-2">
+            <a href="{{ route('defects.create') }}" class="btn flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem; background: #7c3aed; color: #fff; border-radius: 8px;">
+                <i class="fas fa-plus"></i> Tambah
+            </a>
             <a href="{{ route('defects.import') }}" class="btn btn-primary flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem; background: #7c3aed;">
                 <i class="fas fa-file-import"></i> Import
             </a>
@@ -222,6 +225,7 @@
                         <th>Alasan</th>
                         <th>Tanggal</th>
                         <th>Komentar</th>
+                        <th style="width:80px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -257,10 +261,20 @@
                                 <span class="text-gray-400">-</span>
                             @endif
                         </td>
+                        <td>
+                            <div class="flex items-center gap-1.5">
+                                <a href="{{ route('defects.edit', $def->id) }}" class="p-1.5 rounded-lg hover:bg-gray-100 transition text-blue-500 hover:text-blue-600" title="Edit">
+                                    <i class="fas fa-pen text-xs"></i>
+                                </a>
+                                <button onclick="confirmDeleteDefect({{ $def->id }}, '{{ $def->lot_id ?? " #" . $def->id }}')" class="p-1.5 rounded-lg hover:bg-red-50 transition text-red-400 hover:text-red-500" title="Hapus">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="text-center py-10">
+                        <td colspan="13" class="text-center py-10">
                             <i class="fas fa-check-circle text-2xl mb-2 block text-green-400"></i>
                             <span class="text-gray-400">Tidak ada defect</span>
                         </td>
@@ -437,6 +451,35 @@ function downloadSummary() {
 }
 document.getElementById('summaryModal').addEventListener('click', function(e) {
     if (e.target === this) closeSummaryModal();
+});
+</script>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteDefectModal" class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center p-4" style="display:none;">
+    <div class="modal-card rounded-xl shadow-2xl max-w-sm w-full p-6">
+        <h3 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle text-red-500"></i> Hapus Defect Item?
+        </h3>
+        <p id="deleteDefectMsg" class="text-xs text-gray-500 mb-5">Data ini akan dihapus secara permanen.</p>
+        <form id="deleteDefectForm" method="POST" style="display:none;">
+            @csrf @method('DELETE')
+        </form>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('deleteDefectForm').submit()" class="flex-1 py-2 rounded-lg text-sm font-semibold text-white" style="background: #dc2626;">Ya, Hapus</button>
+            <button onclick="document.getElementById('deleteDefectModal').style.display='none'" class="btn btn-ghost flex-1">Batal</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDeleteDefect(id, label) {
+    document.getElementById('deleteDefectMsg').innerHTML = 'Data defect <strong>' + label + '</strong> akan dihapus secara permanen. Tindakan ini tidak bisa dibatalkan.';
+    const form = document.getElementById('deleteDefectForm');
+    form.action = '/defects/' + id;
+    document.getElementById('deleteDefectModal').style.display = 'flex';
+}
+document.getElementById('deleteDefectModal').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
 });
 </script>
 @endpush

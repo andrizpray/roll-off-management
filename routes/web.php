@@ -23,8 +23,14 @@ Route::put('/items/{id}', [RollItemController::class, 'update'])->name('items.up
 Route::delete('/items/{id}', [RollItemController::class, 'destroy'])->name('items.destroy');
 
 Route::get('/defects', [DefectItemController::class, 'index'])->name('defects.index');
+Route::get('/defects/create', [DefectItemController::class, 'create'])->name('defects.create');
+Route::post('/defects', [DefectItemController::class, 'store'])->name('defects.store');
+Route::get('/defects/lookup', [DefectItemController::class, 'lookup'])->name('defects.lookup');
 Route::get('/defects/export', [DefectItemController::class, 'export'])->name('defects.export');
 Route::get('/defects/summary-report', [DefectItemController::class, 'summaryReport'])->name('defects.summary');
 Route::get('/defects/import', [DefectItemController::class, 'importForm'])->name('defects.import');
 Route::post('/defects/import', [DefectItemController::class, 'import'])->name('defects.import.post');
 Route::get('/defects/import/template', [DefectItemController::class, 'importTemplate'])->name('defects.import.template');
+Route::get('/defects/{id}/edit', [DefectItemController::class, 'edit'])->name('defects.edit');
+Route::put('/defects/{id}', [DefectItemController::class, 'update'])->name('defects.update');
+Route::delete('/defects/{id}', [DefectItemController::class, 'destroy'])->name('defects.destroy');
