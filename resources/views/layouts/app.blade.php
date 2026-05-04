@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Roll Off Management')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Prevent flash of wrong theme -->
     <script>
@@ -443,7 +444,7 @@
                             </div>
 
                             <!-- Body -->
-                            <div id="notifBody" class="max-h-80 overflow-y-auto">
+                            <div id="notifBody" class="max-h-80 overflow-y-auto bg-white">
                                 <div class="p-6 text-center">
                                     <i class="fas fa-spinner fa-spin text-gray-300 text-lg"></i>
                                     <p class="text-xs text-gray-400 mt-2">Memuat notifikasi...</p>
@@ -452,12 +453,17 @@
 
                             <!-- Footer -->
                             <div id="notifFooter" class="hidden px-4 py-2.5 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-                                <button onclick="loadNotif()" class="text-xs text-gray-400 hover:text-gray-600 font-medium">
-                                    <i class="fas fa-arrows-rotate mr-1"></i>Refresh
+                                <button onclick="markAllRead()" class="text-xs text-blue-600 hover:text-blue-700 font-medium" id="markAllReadBtn">
+                                    <i class="fas fa-check-double mr-1"></i>Tandai Semua
                                 </button>
-                                <a href="/notifications/page" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
-                                    Lihat Semua <i class="fas fa-arrow-right ml-0.5"></i>
-                                </a>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="loadNotif()" class="text-xs text-gray-400 hover:text-gray-600 font-medium">
+                                        <i class="fas fa-arrows-rotate"></i>
+                                    </button>
+                                    <a href="/notifications/page" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                                        Lihat Semua <i class="fas fa-arrow-right ml-0.5"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -696,6 +702,46 @@
             if (hours < 24) return hours + 'j';
             if (days < 7) return days + 'h';
             return d.getDate() + '/' + (d.getMonth() + 1);
+        }
+
+        /* ===== Mark as Read ===== */
+        function markAllRead() {
+            var btn = document.getElementById('markAllReadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Menandai...';
+
+            fetch('/notifications/mark-read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: JSON.stringify({})
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                renderNotif(data);
+                notifLoaded = true;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check mr-1"></i>Sudah Dibaca';
+                btn.classList.remove('text-blue-600', 'hover:text-blue-700');
+                btn.classList.add('text-green-600');
+            })
+            .catch(function() {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-double mr-1"></i>Tandai Semua';
+            });
+        }
+
+        function markSingleRead(type, refId) {
+            fetch('/notifications/mark-read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: JSON.stringify({ type: type, reference_id: refId })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                renderNotif(data);
+                notifLoaded = true;
+            })
+            .catch(function() {});
         }
 
         // Auto-load badge count on page load

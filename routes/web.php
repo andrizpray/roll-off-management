@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/notifications', [DashboardController::class, 'notifications'])->name('notifications');
 Route::get('/notifications/page', [DashboardController::class, 'notificationsPage'])->name('notifications.page');
+Route::post('/notifications/mark-read', [DashboardController::class, 'markAsRead'])->name('notifications.mark-read');
 
 Route::get('/items', [RollItemController::class, 'index'])->name('items.index');
 Route::get('/items/create', [RollItemController::class, 'create'])->name('items.create');

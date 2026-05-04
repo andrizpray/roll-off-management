@@ -3,14 +3,13 @@
 namespace App\Services;
 
 use App\Models\DefectItem;
+use App\Models\NotificationRead;
 use App\Models\RollItem;
-use Illuminate\Support\Facades\DB;
 
 class NotificationService
 {
     /**
-     * Get all notifications summary (for topbar badge + panel).
-     * Returns array with counts and sample items.
+     * Get notifications summary for topbar badge + panel (unread only, max 10 each).
      */
     public function getNotifications(): array
     {
@@ -25,7 +24,7 @@ class NotificationService
     }
 
     /**
-     * Get all notifications without limit (for full page view).
+     * Get all notifications for full page (unread first, then read, no limit).
      */
     public function getAllNotifications(): array
     {
@@ -40,74 +39,121 @@ class NotificationService
     }
 
     /**
-     * Items without any location (all tracking columns empty/null/'-').
+     * Get raw IDs for mark-all-read (used by controller).
+     */
+    public function getAllItemsWithoutLocationRaw()
+    {
+        return RollItem::whereRaw("
+            COALESCE(NULLIF(so_desember,'-'), NULLIF(receiving_2026,'-'), NULLIF(so_maret_2026,'-'), NULLIF(pic_2026,'-'), NULLIF(rcv_cnv_2026,'-'), NULLIF(so_september,'-')) IS NULL
+        ")->select('id')->pluck('id');
+    }
+
+    public function getAllRecentDefectsRaw()
+    {
+        return DefectItem::where('created_at', '>=', now()->subDays(7))->select('id')->pluck('id');
+    }
+
+    /**
+     * Base query for items without location, excluding read ones.
+     */
+    private function noLocationBaseQuery()
+    {
+        $readIds = NotificationRead::where('type', 'no_location')->pluck('reference_id')->toArray();
+
+        return RollItem::whereRaw("
+            COALESCE(NULLIF(so_desember,'-'), NULLIF(receiving_2026,'-'), NULLIF(so_maret_2026,'-'), NULLIF(pic_2026,'-'), NULLIF(rcv_cnv_2026,'-'), NULLIF(so_september,'-')) IS NULL
+        ")
+            ->select('id', 'lot_id', 'paper_type', 'gsm', 'width', 'created_at')
+            ->when($readIds, fn($q) => $q->whereNotIn('id', $readIds))
+            ->orderByDesc('created_at');
+    }
+
+    /**
+     * Base query for recent defects, excluding read ones.
+     */
+    private function recentDefectsBaseQuery()
+    {
+        $readIds = NotificationRead::where('type', 'recent_defects')->pluck('reference_id')->toArray();
+
+        return DefectItem::where('created_at', '>=', now()->subDays(7))
+            ->select('id', 'lot_id', 'year', 'reason', 'paper_type', 'gsm', 'created_at')
+            ->when($readIds, fn($q) => $q->whereNotIn('id', $readIds))
+            ->orderByDesc('created_at');
+    }
+
+    /**
+     * Unread items without location (max 10 for dropdown).
      */
     private function getItemsWithoutLocation(): array
     {
-        $items = RollItem::whereRaw("
-            COALESCE(NULLIF(so_desember,'-'), NULLIF(receiving_2026,'-'), NULLIF(so_maret_2026,'-'), NULLIF(pic_2026,'-'), NULLIF(rcv_cnv_2026,'-'), NULLIF(so_september,'-')) IS NULL
-        ")
-            ->select('id', 'lot_id', 'paper_type', 'gsm', 'width', 'created_at')
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get();
+        $unread = (clone $this->noLocationBaseQuery())->limit(10)->get();
 
         return [
-            'count' => RollItem::whereRaw("
-                COALESCE(NULLIF(so_desember,'-'), NULLIF(receiving_2026,'-'), NULLIF(so_maret_2026,'-'), NULLIF(pic_2026,'-'), NULLIF(rcv_cnv_2026,'-'), NULLIF(so_september,'-')) IS NULL
-            ")->count(),
-            'items' => $items,
+            'count' => $this->noLocationBaseQuery()->count(),
+            'items' => $unread,
         ];
     }
 
     /**
-     * All items without location (no limit).
+     * All items without location for full page (include read items).
      */
     private function getAllItemsWithoutLocation(): array
     {
-        $items = RollItem::whereRaw("
+        $readIds = NotificationRead::where('type', 'no_location')->pluck('reference_id')->toArray();
+
+        $allItems = RollItem::whereRaw("
             COALESCE(NULLIF(so_desember,'-'), NULLIF(receiving_2026,'-'), NULLIF(so_maret_2026,'-'), NULLIF(pic_2026,'-'), NULLIF(rcv_cnv_2026,'-'), NULLIF(so_september,'-')) IS NULL
         ")
             ->select('id', 'lot_id', 'paper_type', 'gsm', 'width', 'created_at')
             ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->map(function ($item) use ($readIds) {
+                $item->is_read = in_array($item->id, $readIds);
+                return $item;
+            });
+
+        $unreadCount = $allItems->filter(fn($i) => !$i->is_read)->count();
 
         return [
-            'count' => $items->count(),
-            'items' => $items,
+            'count' => $unreadCount,
+            'items' => $allItems,
         ];
     }
 
     /**
-     * Defect items added in the last 7 days.
+     * Unread recent defects (max 10 for dropdown).
      */
     private function getRecentDefects(): array
     {
-        $items = DefectItem::where('created_at', '>=', now()->subDays(7))
-            ->select('id', 'lot_id', 'year', 'reason', 'paper_type', 'gsm', 'created_at')
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get();
+        $unread = (clone $this->recentDefectsBaseQuery())->limit(10)->get();
 
         return [
-            'count' => DefectItem::where('created_at', '>=', now()->subDays(7))->count(),
-            'items' => $items,
+            'count' => $this->recentDefectsBaseQuery()->count(),
+            'items' => $unread,
         ];
     }
 
     /**
-     * All defect items in the last 7 days (no limit).
+     * All recent defects for full page (include read items).
      */
     private function getAllRecentDefects(): array
     {
-        $items = DefectItem::where('created_at', '>=', now()->subDays(7))
+        $readIds = NotificationRead::where('type', 'recent_defects')->pluck('reference_id')->toArray();
+
+        $allItems = DefectItem::where('created_at', '>=', now()->subDays(7))
             ->select('id', 'lot_id', 'year', 'reason', 'paper_type', 'gsm', 'created_at')
             ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->map(function ($item) use ($readIds) {
+                $item->is_read = in_array($item->id, $readIds);
+                return $item;
+            });
+
+        $unreadCount = $allItems->filter(fn($i) => !$i->is_read)->count();
 
         return [
-            'count' => $items->count(),
-            'items' => $items,
+            'count' => $unreadCount,
+            'items' => $allItems,
         ];
     }
 }

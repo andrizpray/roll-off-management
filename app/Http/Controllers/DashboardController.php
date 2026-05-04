@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\DefectItem;
+use App\Models\NotificationRead;
 use App\Models\RollItem;
 use App\Services\NotificationService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -69,5 +71,39 @@ class DashboardController extends Controller
         $service = new NotificationService();
         $data = $service->getAllNotifications();
         return view('notifications.index', $data);
+    }
+
+    public function markAsRead(Request $request)
+    {
+        $type = $request->input('type'); // 'no_location', 'recent_defects'
+        $referenceId = $request->input('reference_id'); // specific item, or null = mark all of type
+
+        if (!$type || !in_array($type, ['no_location', 'recent_defects'])) {
+            return response()->json(['error' => 'Invalid type'], 400);
+        }
+
+        if ($referenceId) {
+            // Mark single item
+            NotificationRead::firstOrCreate([
+                'type' => $type,
+                'reference_id' => $referenceId,
+            ]);
+        } else {
+            // Mark all items of this type as read
+            $service = new NotificationService();
+            $items = $type === 'no_location'
+                ? $service->getAllItemsWithoutLocationRaw()
+                : $service->getAllRecentDefectsRaw();
+
+            foreach ($items as $item) {
+                NotificationRead::firstOrCreate([
+                    'type' => $type,
+                    'reference_id' => $item->id,
+                ]);
+            }
+        }
+
+        // Return updated counts
+        return response()->json($service->getNotifications());
     }
 }
