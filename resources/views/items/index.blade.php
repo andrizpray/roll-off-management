@@ -351,12 +351,14 @@ function printSelected() {
 
     // Open print window with only selected rows
     const table = document.getElementById('itemsTable');
-    const headers = table.querySelector('thead tr').innerHTML;
+    const headerCells = table.querySelectorAll('thead tr th');
+    // Skip checkbox (1st) and action buttons (last 2: QR + arrow)
+    const headers = Array.from(headerCells).slice(1, -2).map(th => th.outerHTML).join('');
     let rows = '';
     document.querySelectorAll('.row-check:checked').forEach(cb => {
         const row = cb.closest('tr.item-row');
-        // Remove checkbox cell, keep rest
-        const cells = Array.from(row.cells).slice(1).map(td => td.innerHTML).join('');
+        // Skip checkbox (1st) and action buttons (last 2: QR + arrow)
+        const cells = Array.from(row.cells).slice(1, -2).map(td => td.innerHTML).join('');
         rows += '<tr>' + cells + '</tr>';
     });
 
