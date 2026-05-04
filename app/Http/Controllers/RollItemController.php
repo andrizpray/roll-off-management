@@ -212,20 +212,32 @@ class RollItemController extends Controller
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
+            'skip_locations' => 'nullable|string',
         ]);
 
         $file = $request->file('file');
         $path = $file->store('imports', 'local');
         $fullPath = Storage::path($path);
 
+        // Parse skip_locations (comma-separated)
+        $skipLocations = [];
+        if ($skipStr = $request->input('skip_locations')) {
+            $skipLocations = array_map('trim', explode(',', $skipStr));
+            $skipLocations = array_filter($skipLocations);
+        }
+
         try {
             $service = new ImportSyncService();
             $format = $service->detectFormat($fullPath);
 
-            session(['import_file_path' => $path, 'import_format' => $format]);
+            session([
+                'import_file_path' => $path,
+                'import_format' => $format,
+                'import_skip_locations' => $skipLocations,
+            ]);
 
             if ($format === 'detail') {
-                $preview = $service->previewDetailSheet($fullPath);
+                $preview = $service->previewDetailSheet($fullPath, $skipLocations);
                 return view('items.import', [
                     'preview' => $preview,
                     'fileName' => $file->getClientOriginalName(),
@@ -250,6 +262,7 @@ class RollItemController extends Controller
     {
         $path = session('import_file_path');
         $format = session('import_format', 'data_sheet');
+        $skipLocations = session('import_skip_locations', []);
 
         if (!$path || !Storage::exists($path)) {
             return redirect()->route('items.import')->with('error', 'File tidak ditemukan. Silakan upload ulang.');
@@ -262,8 +275,11 @@ class RollItemController extends Controller
             $service = new ImportSyncService();
 
             if ($format === 'detail') {
-                $result = $service->syncDetailSheet($fullPath);
+                $result = $service->syncDetailSheet($fullPath, $skipLocations);
                 $parts = ["DATA: {$result['created']} baru, {$result['updated']} diupdate, {$result['skipped']} skip"];
+                if (!empty($result['location_skipped'])) {
+                    $parts[] = "{$result['location_skipped']} dilewati (lokasi skip)";
+                }
                 if ($result['deleted'] > 0) {
                     $parts[] = "{$result['deleted']} dihapus (tidak ada di file)";
                 }
@@ -279,12 +295,12 @@ class RollItemController extends Controller
             }
 
             Storage::delete($path);
-            session()->forget(['import_file_path', 'import_format']);
+            session()->forget(['import_file_path', 'import_format', 'import_skip_locations']);
 
             return redirect()->route('items.import')->with('success', $msg);
         } catch (\Exception $e) {
             Storage::delete($path);
-            session()->forget(['import_file_path', 'import_format']);
+            session()->forget(['import_file_path', 'import_format', 'import_skip_locations']);
             return redirect()->route('items.import')->with('error', 'Gagal sync: ' . $e->getMessage());
         }
     }

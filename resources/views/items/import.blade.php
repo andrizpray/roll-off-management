@@ -37,10 +37,21 @@
         <h3 class="text-sm font-semibold text-gray-800 mb-1 flex items-center gap-2">
             <i class="fas fa-upload text-xs text-blue-500"></i>Upload File Excel
         </h3>
-        <p class="text-xs text-gray-400 mb-5">Upload file Excel. Sistem otomatis mendeteksi format — <strong>sheet DATA</strong> (sync lengkap) atau <strong>format detail</strong> (update field kosong + DetailLocation).</p>
+        <p class="text-xs text-gray-400 mb-3">Upload file Excel. Sistem otomatis mendeteksi format — <strong>sheet DATA</strong> (sync lengkap) atau <strong>format detail</strong> (update field kosong + DetailLocation).</p>
 
         <form method="POST" action="{{ route('items.import.preview') }}" enctype="multipart/form-data" id="uploadForm">
             @csrf
+
+            <!-- Skip Locations (for detail format) -->
+            <div class="mb-5 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 mb-1.5 cursor-pointer" for="skipLocations">
+                    <i class="fas fa-filter text-gray-400"></i>Skip Lokasi <span class="font-normal text-gray-400">(format detail)</span>
+                </label>
+                <input type="text" id="skipLocations" name="skip_locations"
+                       placeholder="Contoh: LOC03, LOC04 (pisahkan koma)"
+                       class="input-field text-xs" />
+                <p class="text-[10px] text-gray-400 mt-1">Baris dengan LocationID yang sesuai akan dilewati (tidak diimport), tapi tetap dianggap ada untuk cek penghapusan.</p>
+            </div>
 
             <!-- Drop Zone -->
             <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all group"
@@ -150,6 +161,17 @@
             </div>
             @endif
         </div>
+
+        @if(($preview['location_skipped'] ?? 0) > 0)
+        <div class="p-3 rounded-lg bg-gray-50 border border-gray-200 mb-5 flex items-center gap-2 text-xs text-gray-600">
+            <i class="fas fa-forward"></i>
+            <span><strong>{{ number_format($preview['location_skipped']) }}</strong> baris dilewati karena lokasi
+            @foreach(($preview['skip_locations'] ?? []) as $loc)
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 font-mono text-[10px] mx-0.5">{{ $loc }}</span>
+            @endforeach
+            — lot_id-nya tetap dipertahankan (tidak dihapus).</span>
+        </div>
+        @endif
 
         @if(($preview['delete_count'] ?? 0) > 0)
         <!-- Deletion Warning -->
@@ -289,6 +311,9 @@
                     <i class="fas fa-info-circle mr-1"></i>
                     @if($preview['new'] > 0 || $preview['updated'] > 0)
                     {{ number_format($preview['new']) }} item baru + {{ number_format($preview['updated']) }} update akan disimpan.
+                    @endif
+                    @if(($preview['location_skipped'] ?? 0) > 0)
+                    {{ number_format($preview['location_skipped']) }} baris dilewati (lokasi skip).
                     @endif
                     @if(($preview['delete_count'] ?? 0) > 0)
                     <span class="text-red-600 font-semibold">{{ number_format($preview['delete_count']) }} item akan dihapus</span> (tidak ada di file).

@@ -84,16 +84,23 @@ class ImportSyncService
         $colIndex = 1;
         while (true) {
             $val = $this->getCellValue($sheet, $colIndex, $headerRow);
-            if (!$val) break;
+            if ($val === null || $val === '') {
+                $colIndex++;
+                // Safety: stop after 50 empty columns in a row
+                if ($colIndex > 50) break;
+                continue;
+            }
             $colMap[strtolower(trim($val))] = $colIndex;
             $colIndex++;
+            // Stop if we've gone past the actual data range
+            if ($colIndex > 100) break;
         }
 
         // Normalize key names
         $keyMap = [
             'lotid' => 'lot_id', 'lot_id' => 'lot_id', 'lot id' => 'lot_id',
             'itemid' => 'item_id', 'item_id' => 'item_id', 'item id' => 'item_id',
-            'weight' => 'end_qty',
+            'weight' => 'end_qty', 'endqty' => 'end_qty', 'end_qty' => 'end_qty',
             'papertype' => 'paper_type', 'paper_type' => 'paper type', 'paper type' => 'paper_type',
             'gramature' => 'gsm', 'gsm' => 'gsm',
             'plybond' => 'plybond',
@@ -107,6 +114,8 @@ class ImportSyncService
             'detaillocation' => 'detail_location', 'detail_location' => 'detail_location', 'detail location' => 'detail_location',
             'updatedetaillocation' => 'update_detail_location', 'update_detail_location' => 'update_detail_location',
             'trtype' => 'tr_type', 'tr_type' => 'tr_type', 'tr type' => 'tr_type',
+            'trdate' => 'tr_date', 'tr_date' => 'tr_date', 'tr date' => 'tr_date',
+            'trtime' => 'tr_time', 'tr_time' => 'tr_time', 'tr time' => 'tr_time',
             'transcode' => 'transcode',
             'datetime_' => 'datetime',
             'last_modified' => 'last_modified',
@@ -137,7 +146,7 @@ class ImportSyncService
     /**
      * Preview detail format (no DB write).
      */
-    public function previewDetailSheet(string $filePath): array
+    public function previewDetailSheet(string $filePath, array $skipLocations = []): array
     {
         $reader = IOFactory::createReaderForFile($filePath);
         $reader->setReadDataOnly(true);
@@ -149,15 +158,32 @@ class ImportSyncService
         $wb->disconnectWorksheets();
         unset($wb);
 
+        // Normalize skip locations for case-insensitive matching
+        $skipMap = [];
+        foreach ($skipLocations as $loc) {
+            $skipMap[strtolower(trim($loc))] = true;
+        }
+
         $existingLotIds = RollItem::pluck('lot_id', 'lot_id')->toArray();
         $items = [];
         $newCount = 0;
         $updatedCount = 0;
         $unchangedCount = 0;
+        $locationSkipped = 0;
+        $allFileLotIds = [];
 
         foreach ($rows as $row) {
             $lotId = $row['lot_id'] ?? '';
             if (empty($lotId)) continue;
+
+            $allFileLotIds[] = $lotId;
+
+            // Check if location should be skipped
+            $rawLoc = $row['detail_location'] ?? $row['location_id'] ?? null;
+            if ($rawLoc && isset($skipMap[strtolower(trim($rawLoc))])) {
+                $locationSkipped++;
+                continue;
+            }
 
             $item = $this->mapDetailToRollItem($row);
 
@@ -202,9 +228,8 @@ class ImportSyncService
             $items[] = $item;
         }
 
-        // Detect lot_ids that exist in DB but NOT in the imported file
-        $fileLotIds = array_column($items, 'lot_id');
-        $toBeDeleted = RollItem::whereNotIn('lot_id', $fileLotIds)
+        // Detect lot_ids that exist in DB but NOT in the imported file (uses ALL file lot_ids including skipped)
+        $toBeDeleted = RollItem::whereNotIn('lot_id', $allFileLotIds)
             ->select('lot_id', 'paper_type', 'gsm', 'width')
             ->orderBy('lot_id')
             ->get()
@@ -219,7 +244,9 @@ class ImportSyncService
         return [
             'total_rows' => count($rows),
             'valid_rows' => count($items),
-            'skipped' => count($rows) - count($items),
+            'skipped' => count($rows) - count($items) - $locationSkipped,
+            'location_skipped' => $locationSkipped,
+            'skip_locations' => $skipLocations,
             'new' => $newCount,
             'updated' => $updatedCount,
             'unchanged' => $unchangedCount,
@@ -232,8 +259,9 @@ class ImportSyncService
     /**
      * Sync detail format — update empty fields only, create if not exists.
      * Also deletes roll_items (and their defect_items) that are NOT in the file.
+     * $skipLocations: array of location values to skip entirely (case-insensitive).
      */
-    public function syncDetailSheet(string $filePath): array
+    public function syncDetailSheet(string $filePath, array $skipLocations = []): array
     {
         $reader = IOFactory::createReaderForFile($filePath);
         $reader->setReadDataOnly(true);
@@ -245,16 +273,30 @@ class ImportSyncService
         $wb->disconnectWorksheets();
         unset($wb);
 
+        // Normalize skip locations
+        $skipMap = [];
+        foreach ($skipLocations as $loc) {
+            $skipMap[strtolower(trim($loc))] = true;
+        }
+
         $created = 0;
         $updated = 0;
         $skipped = 0;
-        $fileLotIds = [];
+        $locationSkipped = 0;
+        $allFileLotIds = [];
 
         foreach ($rows as $row) {
             $lotId = $row['lot_id'] ?? '';
             if (empty($lotId)) { $skipped++; continue; }
 
-            $fileLotIds[] = $lotId;
+            $allFileLotIds[] = $lotId;
+
+            // Check if location should be skipped
+            $rawLoc = $row['detail_location'] ?? $row['location_id'] ?? null;
+            if ($rawLoc && isset($skipMap[strtolower(trim($rawLoc))])) {
+                $locationSkipped++;
+                continue;
+            }
 
             $existing = RollItem::where('lot_id', $lotId)->first();
             $data = $this->mapDetailToRollItem($row);
@@ -281,9 +323,9 @@ class ImportSyncService
             }
         }
 
-        // Delete roll_items + defect_items NOT in the imported file
+        // Delete roll_items + defect_items NOT in the imported file (uses ALL file lot_ids including skipped)
         $deleted = 0;
-        $uniqueFileLotIds = array_unique($fileLotIds);
+        $uniqueFileLotIds = array_unique($allFileLotIds);
         $toDelete = RollItem::whereNotIn('lot_id', $uniqueFileLotIds)->pluck('lot_id')->toArray();
         if (!empty($toDelete)) {
             // Delete related defect_items first
@@ -292,7 +334,7 @@ class ImportSyncService
             $deleted = RollItem::whereIn('lot_id', $toDelete)->delete();
         }
 
-        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped, 'deleted' => $deleted];
+        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped, 'location_skipped' => $locationSkipped, 'deleted' => $deleted];
     }
 
     /**
@@ -309,11 +351,34 @@ class ImportSyncService
         // Use DetailLocation for location_id if available, fallback to LocationID
         $location = $clean($row['detail_location'] ?? null) ?? $clean($row['location_id'] ?? null);
 
+        // Convert Excel serial date (e.g., 43141) to Y-m-d
+        $trDate = $clean($row['tr_date']);
+        if ($trDate && is_numeric($trDate) && $trDate > 30000) {
+            $trDate = Carbon::createFromFormat('Y-m-d', '1899-12-30')->addDays((int)$trDate)->format('Y-m-d');
+        }
+        if ($trDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $trDate)) {
+            $trDate = null;
+        }
+
+        // Convert Excel fraction time (e.g., 0.701) to HH:MM
+        $trTime = $clean($row['tr_time']);
+        if ($trTime && is_numeric($trTime) && $trTime < 1) {
+            $totalMinutes = (int)round($trTime * 1440);
+            $hours = floor($totalMinutes / 60);
+            $mins = $totalMinutes % 60;
+            $trTime = str_pad($hours, 2, '0') . ':' . str_pad($mins, 2, '0');
+        }
+        if ($trTime && !preg_match('/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/', $trTime)) {
+            $trTime = null;
+        }
+
         return [
             'lot_id' => $clean($row['lot_id']),
             'item_id' => $clean($row['item_id']),
-            'end_qty' => $clean($row['end_qty']),
+            'end_qty' => $clean($row['end_qty']) ?? 0,
             'rew_id' => $clean($row['rew_id']),
+            'tr_date' => $trDate,
+            'tr_time' => $trTime,
             'paper_type' => $clean($row['paper_type']),
             'gsm' => $clean($row['gsm']),
             'plybond' => $clean($row['plybond']),
