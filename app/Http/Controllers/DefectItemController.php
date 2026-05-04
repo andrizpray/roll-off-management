@@ -394,30 +394,64 @@ class DefectItemController extends Controller
         $desc = trim($description);
 
         // 1. Extract plybond: E followed by digits (e.g., E150)
-        if (preg_match('/E(\d+)/i', $desc, $m)) {
+        if (preg_match('/\bE(\d{2,4})\b/i', $desc, $m)) {
             $result['plybond'] = (int) $m[1];
-            $desc = str_ireplace($m[0], ' ', $desc);
+            $desc = preg_replace('/\bE\d{2,4}\b/i', ' ', $desc);
         }
 
         // 2. Extract width: number followed by "mm" (e.g., 880mm)
-        if (preg_match('/(\d{3,4})mm/i', $desc, $m)) {
+        if (preg_match('/(\d{3,4})\s*mm\b/i', $desc, $m)) {
             $result['width'] = (int) $m[1];
-            $desc = str_ireplace($m[0], ' ', $desc);
+            $desc = preg_replace('/\d{3,4}\s*mm\b/i', ' ', $desc);
         }
 
-        // 3. Extract paper_type and gsm:
-        //    Pattern: text up to the first digit sequence attached to it
-        //    e.g. "Grey Board GB350" → paper_type="Grey Board GB", gsm=350
-        //    e.g. "B KRAFT BK125"    → paper_type="B KRAFT BK", gsm=125
-        if (preg_match('/^(.+?)\s*(\d{2,4})\s*$/i', trim($desc), $m)) {
+        // Clean up extra spaces
+        $desc = preg_replace('/\s+/', ' ', trim($desc));
+
+        // 2b. Handle "350g" format (e.g., "Duplex 350g 880" → gsm=350, width=880)
+        //    Move this number before 'g' as standalone then re-split
+        if (preg_match('/(\d{2,4})g\b/i', $desc, $mg)) {
+            $result['gsm'] = (int) $mg[1];
+            $desc = preg_replace('/\d{2,4}g\b/i', ' ', $desc);
+            $desc = preg_replace('/\s+/', ' ', trim($desc));
+
+            // Check remaining trailing number as width
+            if (preg_match('/(\d{3,4})\s*$/i', $desc, $mw)) {
+                $result['width'] = (int) $mw[1];
+                $desc = preg_replace('/\d{3,4}\s*$/i', ' ', $desc);
+                $desc = preg_replace('/\s+/', ' ', trim($desc));
+            }
+
+            // Remaining text is paper_type
+            if (trim($desc) !== '') {
+                $result['paper_type'] = trim($desc);
+            }
+            return $result;
+        }
+
+        // 3. Extract paper_type + gsm from the remaining description
+        //    Format: "B KRAFT BK125 690" → paper_type="B KRAFT BK", gsm=125, width=690
+        //    Format: "Grey Board GB350 880" → paper_type="Grey Board GB", gsm=350, width=880
+        //    Strategy: find the LAST number that's attached to text (no space before it) = GSM
+        //              remaining trailing standalone number = width
+        if (preg_match('/^(.*?)\s*([A-Za-z]+)(\d{2,4})\s*(\d{0,4}?)\s*$/i', $desc, $m)) {
+            $prefix = trim($m[1]);
+            $code = $m[2];
+            $gsm = (int) $m[3];
+            $trailing = trim($m[4]);
+
+            $result['paper_type'] = ($prefix !== '' ? $prefix . ' ' : '') . $code;
+            $result['gsm'] = $gsm;
+
+            // If there's a trailing number after gsm, it's the width
+            if ($trailing !== '' && is_numeric($trailing) && (int) $trailing > 0) {
+                $result['width'] = (int) $trailing;
+            }
+        } elseif (preg_match('/^(.+?)\s+(\d{2,4})\s+(\d{3,4})\s*$/i', $desc, $m)) {
+            // Fallback: "B KRAFT BK125 690" style where prefix has space
             $result['paper_type'] = trim($m[1]);
             $result['gsm'] = (int) $m[2];
-            $desc = '';
-        }
-
-        // 4. If no gsm found yet, check for trailing standalone 3-digit number as width
-        if ($result['width'] === null && preg_match('/(\d{3,4})\s*$/i', trim($desc), $m)) {
-            $result['width'] = (int) $m[1];
+            $result['width'] = (int) $m[3];
         }
 
         return $result;
