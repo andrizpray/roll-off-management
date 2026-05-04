@@ -62,11 +62,11 @@
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-scroll mr-1"></i>Paper Type</div>
-                <div class="text-sm font-semibold text-gray-900">{{ $item->paper_type ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->parsed_paper_type ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-ruler mr-1"></i>GSM</div>
-                <div class="text-sm font-semibold text-gray-900">{{ $item->gsm ?? '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->parsed_gsm ?? '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-layer-group mr-1"></i>Plybond</div>
@@ -74,7 +74,7 @@
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-arrows-left-right mr-1"></i>Width</div>
-                <div class="text-sm font-semibold text-gray-900">{{ $item->width ? $item->width . ' MM' : '-' }}</div>
+                <div class="text-sm font-semibold text-gray-900">{{ $item->parsed_width ? $item->parsed_width . ' MM' : '-' }}</div>
             </div>
             <div class="info-box">
                 <div class="text-[10px] font-semibold uppercase tracking-wide mb-1" class="text-gray-400"><i class="fas fa-sync mr-1"></i>Rew ID</div>
@@ -239,7 +239,7 @@
             <div id="qrCodeShow" class="inline-block p-3 bg-white rounded-xl border border-gray-100"></div>
         </div>
         <div class="text-sm font-bold text-gray-900 mb-1">{{ $item->lot_id }}</div>
-        <div class="text-xs text-gray-400 mb-4">{{ $item->paper_type ?? '-' }} · {{ $item->gsm ?? '-' }} GSM</div>
+        <div class="text-xs text-gray-400 mb-4">{{ $item->parsed_paper_type ?? '-' }} · {{ $item->parsed_gsm ?? '-' }} GSM</div>
         <div class="flex gap-2">
             <button onclick="downloadQR()" class="btn btn-primary flex-1 flex items-center justify-center gap-1.5" style="font-size:0.75rem;">
                 <i class="fas fa-download"></i> Download

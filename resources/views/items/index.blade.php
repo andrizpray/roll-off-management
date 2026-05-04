@@ -160,7 +160,7 @@
                         <td class="truncate" style="max-width: 140px;" title="{{ $item->description }}">{{ $item->description ?? '-' }}</td>
                         <td>{{ $item->parsed_gsm ?? '-' }}</td>
                         <td><span class="font-medium text-gray-700">{{ $item->grade ?? '-' }}</span></td>
-                        <td>{{ $item->width ?? '-' }}</td>
+                        <td>{{ $item->parsed_width ?? '-' }}</td>
                         <td class="text-xs text-gray-500">{{ $item->tr_date ? \Carbon\Carbon::parse($item->tr_date)->format('d M Y') : '-' }}</td>
                         <td class="font-semibold text-gray-900">{{ number_format($item->end_qty) }}</td>
                         <td>
@@ -236,7 +236,7 @@
                 @endif
                 <div class="flex justify-between text-xs mb-1.5">
                     <span class="text-gray-400">Spec</span>
-                    <span class="text-gray-600">{{ $item->parsed_gsm ?? '-' }} / {{ $item->width ?? '-' }} mm</span>
+                    <span class="text-gray-600">{{ $item->parsed_gsm ?? '-' }} / {{ $item->parsed_width ?? '-' }} mm</span>
                 </div>
                 @if($item->grade)
                     <div class="flex justify-between text-xs mb-1.5">

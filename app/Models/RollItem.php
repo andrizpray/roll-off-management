@@ -63,6 +63,18 @@ class RollItem extends Model
     }
 
     /**
+     * Parse width from description.
+     */
+    public function getParsedWidthAttribute(): ?string
+    {
+        if (!empty($this->width) && $this->width !== '-') {
+            return (string) $this->width;
+        }
+        $parsed = self::parseDescriptionStatic($this->description);
+        return $parsed['width'] !== null ? (string) $parsed['width'] : null;
+    }
+
+    /**
      * Parse paper_type from description.
      */
     public function getParsedPaperTypeAttribute(): ?string
