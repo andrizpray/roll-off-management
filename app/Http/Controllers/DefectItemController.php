@@ -159,9 +159,11 @@ class DefectItemController extends Controller
         $request->validate([
             'file' => 'required|file|mimes:csv,xlsx,xls|max:5120',
             'year' => 'required|integer|min:2020|max:2030',
+            'mode' => 'nullable|in:new,update',
         ]);
 
         $year = $request->input('year');
+        $mode = $request->input('mode', 'auto');
         $file = $request->file('file');
         $path = $file->getRealPath();
 
@@ -173,9 +175,44 @@ class DefectItemController extends Controller
             return back()->with('error', 'File kosong atau tidak dapat dibaca.');
         }
 
+        // Detect format: check if it has detail columns from Excel export
+        $firstRow = $rows->first();
+        $isDetailFormat = $this->isDetailFormat($firstRow);
+
+        // Auto-detect mode if not explicitly set
+        if ($mode === 'auto') {
+            $mode = $isDetailFormat ? 'update' : 'new';
+        }
+
+        if ($mode === 'update') {
+            return $this->importUpdate($rows, $year);
+        }
+
+        return $this->importNew($rows, $year);
+    }
+
+    /**
+     * Check if row has detail columns (PaperType, Gramature, RewID, etc.)
+     */
+    private function isDetailFormat($row): bool
+    {
+        $detailKeys = ['PaperType', 'Gramature', 'RewID', 'paper_type', 'gramature', 'rew_id'];
+        $rowKeys = array_map('strtolower', array_keys($row->toArray()));
+        foreach ($detailKeys as $key) {
+            if (in_array(strtolower($key), $rowKeys)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Import mode: Create new defect items (simple CSV format)
+     */
+    private function importNew($rows, $year)
+    {
         $imported = 0;
         $skipped = 0;
-        $notFound = [];
 
         DB::beginTransaction();
         try {
@@ -186,7 +223,6 @@ class DefectItemController extends Controller
                     continue;
                 }
 
-                // Auto-fill from roll_items
                 $rollItem = RollItem::where('lot_id', $lotId)->first();
 
                 DefectItem::create([
@@ -212,6 +248,124 @@ class DefectItemController extends Controller
             return back()->with('error', 'Import gagal: ' . $e->getMessage());
         }
 
-        return back()->with('success', "Berhasil import {$imported} defect item." . ($skipped > 0 ? " {$skipped} baris dilewati (lot_id kosong)." : ''));
+        return back()->with('success', "Berhasil import {$imported} defect item baru." . ($skipped > 0 ? " {$skipped} baris dilewati (lot_id kosong)." : ''));
+    }
+
+    /**
+     * Import mode: Update existing defect items from detail Excel format
+     */
+    private function importUpdate($rows, $year)
+    {
+        $updated = 0;
+        $created = 0;
+        $skipped = 0;
+        $notFound = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $row) {
+                $lotId = trim((string) ($row['LotID'] ?? $row['lot_id'] ?? $row['Lot Id'] ?? $row['lot'] ?? ''));
+                if ($lotId === '') {
+                    $skipped++;
+                    continue;
+                }
+
+                // Build data from Excel columns (flexible naming)
+                $data = $this->extractDetailRow($row, $year);
+
+                // Check if defect already exists
+                $existing = DefectItem::where('lot_id', $lotId)->where('year', $year)->first();
+
+                if ($existing) {
+                    // Update only empty/null fields
+                    $changed = false;
+                    foreach (['paper_type', 'gsm', 'plybond', 'width', 'rew_id', 'keterangan'] as $field) {
+                        if ((empty($existing->$field) || $existing->$field === '-') && !empty($data[$field])) {
+                            $existing->$field = $data[$field];
+                            $changed = true;
+                        }
+                    }
+                    // Also update reason/category/defect_date if provided
+                    foreach (['reason', 'category', 'defect_date', 'month', 'tr_type'] as $field) {
+                        if (!empty($data[$field]) && empty($existing->$field)) {
+                            $existing->$field = $data[$field];
+                            $changed = true;
+                        }
+                    }
+                    if ($changed) {
+                        $existing->save();
+                        $updated++;
+                    } else {
+                        $skipped++;
+                    }
+                } else {
+                    // Try to find in any year
+                    $anyYear = DefectItem::where('lot_id', $lotId)->first();
+                    if ($anyYear) {
+                        $changed = false;
+                        foreach (['paper_type', 'gsm', 'plybond', 'width', 'rew_id', 'keterangan'] as $field) {
+                            if ((empty($anyYear->$field) || $anyYear->$field === '-') && !empty($data[$field])) {
+                                $anyYear->$field = $data[$field];
+                                $changed = true;
+                            }
+                        }
+                        if ($changed) {
+                            $anyYear->save();
+                            $updated++;
+                        }
+                    } else {
+                        // Create new defect item
+                        DefectItem::create($data);
+                        $created++;
+                    }
+                }
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->with('error', 'Update gagal: ' . $e->getMessage());
+        }
+
+        $msg = "Berhasil: {$updated} data diupdate, {$created} data baru ditambahkan.";
+        if ($skipped > 0) {
+            $msg .= " {$skipped} baris dilewati.";
+        }
+        if ($notFound) {
+            $msg .= " " . count($notFound) . " lot_id tidak ditemukan: " . implode(', ', array_slice($notFound, 0, 5)) . (count($notFound) > 5 ? '...' : '');
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Extract data from a detail-format Excel row with flexible column names
+     */
+    private function extractDetailRow($row, $year): array
+    {
+        $v = function ($keys) use ($row) {
+            foreach ($keys as $key) {
+                $val = $row[$key] ?? null;
+                if ($val !== null && trim((string) $val) !== '' && trim((string) $val) !== 'NULL' && trim((string) $val) !== '-') {
+                    return trim((string) $val);
+                }
+            }
+            return null;
+        };
+
+        return [
+            'year'         => $year,
+            'lot_id'       => trim((string) ($row['LotID'] ?? $row['lot_id'] ?? $row['Lot Id'] ?? '')),
+            'paper_type'   => $v(['PaperType', 'paper_type', 'paper type']),
+            'gsm'          => $v(['Gramature', 'gramature', 'gsm', 'GSM']),
+            'plybond'      => $v(['Plybond', 'plybond']),
+            'width'        => $v(['Width', 'width']),
+            'rew_id'       => $v(['RewID', 'rew_id', 'rew id']),
+            'keterangan'   => $v(['Comment', 'comment', 'Comments', 'comments', 'keterangan']),
+            'reason'       => $v(['reason', 'Reason']),
+            'category'     => $v(['category', 'Category']),
+            'defect_date'  => $v(['defect_date', 'DefectDate', 'DateTime_']) ?? date('Y-m-d'),
+            'month'        => $v(['month', 'Month']),
+            'tr_type'      => $v(['TrType', 'tr_type', 'tr type']),
+        ];
     }
 }

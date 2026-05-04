@@ -36,7 +36,7 @@
         <h3 class="text-sm font-semibold text-gray-800 mb-1 flex items-center gap-2">
             <i class="fas fa-upload text-xs text-blue-500"></i>Import Barang Bermasalah
         </h3>
-        <p class="text-xs text-gray-400 mb-5">Upload file CSV/Excel berisi daftar lot_id yang bermasalah. Data spesifikasi (paper type, GSM, dll) akan otomatis diambil dari <strong>Roll Items</strong>.</p>
+        <p class="text-xs text-gray-400 mb-5">Upload file CSV/Excel. Sistem otomatis mendeteksi format file — <strong>mode baru</strong> (CSV sederhana) atau <strong>mode update</strong> (Excel detail).</p>
 
         <form method="POST" action="{{ route('defects.import.post') }}" enctype="multipart/form-data" id="importForm">
             @csrf
@@ -49,6 +49,34 @@
                     <option value="2025" {{ old('year') == 2025 ? 'selected' : '' }}>2025</option>
                     <option value="2026" {{ old('year') == 2026 ? 'selected' : '' }}>2026</option>
                 </select>
+            </div>
+
+            <!-- Mode Selector -->
+            <div class="mb-5">
+                <label class="block text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-2">Mode Import</label>
+                <div class="flex flex-wrap gap-2">
+                    <label class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 border-gray-200">
+                        <input type="radio" name="mode" value="auto" checked class="accent-blue-500">
+                        <div>
+                            <span class="text-xs font-semibold text-gray-800">🤖 Otomatis</span>
+                            <p class="text-[10px] text-gray-400">Deteksi format dari kolom file</p>
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition has-[:checked]:border-green-500 has-[:checked]:bg-green-50 border-gray-200">
+                        <input type="radio" name="mode" value="new" class="accent-green-500">
+                        <div>
+                            <span class="text-xs font-semibold text-gray-800">➕ Data Baru</span>
+                            <p class="text-[10px] text-gray-400">Tambah defect baru dari CSV sederhana</p>
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50 border-gray-200">
+                        <input type="radio" name="mode" value="update" class="accent-purple-500">
+                        <div>
+                            <span class="text-xs font-semibold text-gray-800">🔄 Update Data</span>
+                            <p class="text-[10px] text-gray-400">Isi field kosong dari Excel detail</p>
+                        </div>
+                    </label>
+                </div>
             </div>
 
             <!-- Drop Zone -->
@@ -79,7 +107,7 @@
                     <i class="fas fa-file-import text-xs"></i> Import
                 </button>
                 <a href="{{ route('defects.import.template') }}" class="btn btn-ghost flex items-center gap-1.5" style="padding: 6px 14px; font-size: 0.7rem;">
-                    <i class="fas fa-download text-xs"></i> Download Template
+                    <i class="fas fa-download text-xs"></i> Template CSV (Data Baru)
                 </a>
             </div>
         </form>
@@ -88,24 +116,61 @@
     <!-- Info Card -->
     <div class="card p-5">
         <h3 class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <i class="fas fa-info-circle text-xs text-blue-500"></i>Petunjuk
+            <i class="fas fa-info-circle text-xs text-blue-500"></i>Format yang Didukung
         </h3>
-        <div class="space-y-2.5">
-            <div class="flex items-start gap-2 text-xs text-gray-600">
-                <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-blue-50 text-blue-600 font-bold shrink-0 mt-0.5">1</span>
-                <span>Download template terlebih dahulu, atau buat CSV sendiri dengan kolom: <code class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">lot_id, reason, category, defect_date</code></span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Mode Baru -->
+            <div class="p-4 rounded-xl bg-green-50 border border-green-100">
+                <h4 class="text-xs font-bold text-green-700 mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-plus-circle"></i> Mode Data Baru
+                </h4>
+                <p class="text-[11px] text-green-600 mb-2">CSV sederhana untuk menambah defect baru.</p>
+                <div class="text-[10px] text-green-600 space-y-1">
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-green-100 px-1 rounded">lot_id</span>
+                        <span class="text-green-500">— wajib</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-green-100 px-1 rounded">reason</span>
+                        <span class="text-green-500">— opsional</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-green-100 px-1 rounded">category</span>
+                        <span class="text-green-500">— opsional</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-green-100 px-1 rounded">defect_date</span>
+                        <span class="text-green-500">— opsional (default hari ini)</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-green-500 mt-2 italic">Data spesifikasi diambil otomatis dari Roll Items.</p>
             </div>
-            <div class="flex items-start gap-2 text-xs text-gray-600">
-                <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-blue-50 text-blue-600 font-bold shrink-0 mt-0.5">2</span>
-                <span>Isi minimal <strong>lot_id</strong>. Kolom lain bersifat opsional.</span>
-            </div>
-            <div class="flex items-start gap-2 text-xs text-gray-600">
-                <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-blue-50 text-blue-600 font-bold shrink-0 mt-0.5">3</span>
-                <span>Data spesifikasi (<strong>paper_type, GSM, plybond, width, rew_id, keterangan</strong>) akan otomatis diambil dari data Roll Items berdasarkan lot_id.</span>
-            </div>
-            <div class="flex items-start gap-2 text-xs text-gray-600">
-                <span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-blue-50 text-blue-600 font-bold shrink-0 mt-0.5">4</span>
-                <span>Pilih <strong>tahun</strong> yang sesuai. Kolom <code class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700">defect_date</code> boleh dikosongkan (default: hari ini).</span>
+
+            <!-- Mode Update -->
+            <div class="p-4 rounded-xl bg-purple-50 border border-purple-100">
+                <h4 class="text-xs font-bold text-purple-700 mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-sync-alt"></i> Mode Update Data
+                </h4>
+                <p class="text-[11px] text-purple-600 mb-2">Excel detail untuk mengisi field kosong di defect yang sudah ada.</p>
+                <div class="text-[10px] text-purple-600 space-y-1">
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-purple-100 px-1 rounded">LotID</span>
+                        <span class="text-purple-500">— wajib</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-purple-100 px-1 rounded">PaperType</span>
+                        <span class="text-purple-500">— opsional</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-purple-100 px-1 rounded">Gramature</span>
+                        <span class="text-purple-500">— opsional</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-mono bg-purple-100 px-1 rounded">RewID / Width / Plybond / Comment</span>
+                        <span class="text-purple-500">— opsional</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-purple-500 mt-2 italic">Hanya mengisi field yang masih kosong, tidak menimpa data.</p>
             </div>
         </div>
     </div>
