@@ -352,16 +352,16 @@ function printSelected() {
     // Column definitions: [header, width%, extract(row)]
     const cols = [
         { label: '#',         w: '4%',  fn: (r,i) => (i+1) },
-        { label: 'Lot ID',    w: '14%', fn: r => r.querySelector('a[style]')?.textContent?.trim() || r.cells[1]?.textContent?.trim() || '' },
-        { label: 'Description', w: '18%', fn: r => r.querySelector('.truncate')?.textContent?.trim() || r.cells[2]?.textContent?.trim() || '' },
+        { label: 'Lot ID',    w: '14%', fn: r => r.cells[1]?.textContent?.trim() || '' },
+        { label: 'Description', w: '18%', fn: r => r.cells[2]?.textContent?.trim() || '' },
         { label: 'GSM',       w: '6%',  fn: r => r.cells[3]?.textContent?.trim() || '' },
         { label: 'Grade',     w: '8%',  fn: r => r.cells[4]?.textContent?.trim() || '' },
         { label: 'Width',     w: '6%',  fn: r => r.cells[5]?.textContent?.trim() || '' },
         { label: 'TR Date',   w: '10%', fn: r => r.cells[6]?.textContent?.trim() || '' },
         { label: 'Qty',       w: '7%',  fn: r => r.cells[7]?.textContent?.trim() || '' },
-        { label: 'Lokasi',    w: '10%', fn: r => r.querySelector('.tag-blue')?.textContent?.trim() || r.cells[8]?.textContent?.trim() || '' },
-        { label: 'Status',    w: '8%',  fn: r => r.querySelector('.tag')?.textContent?.trim() || r.cells[9]?.textContent?.trim() || '' },
-        { label: 'Komentar',  w: '9%',  fn: r => r.querySelector('.truncate[title]')?.textContent?.trim() || r.cells[10]?.textContent?.trim() || '' },
+        { label: 'Lokasi',    w: '10%', fn: r => r.cells[8]?.textContent?.trim() || '' },
+        { label: 'Status',    w: '8%',  fn: r => r.cells[9]?.textContent?.trim() || '' },
+        { label: 'Komentar',  w: '9%',  fn: r => r.cells[10]?.textContent?.trim() || '' },
     ];
 
     const ths = cols.map(c => `<th style="width:${c.w}">${c.label}</th>`).join('');
