@@ -350,18 +350,19 @@ function printSelected() {
     if(ids.length === 0) return;
 
     // Column definitions: [header, width%, extract(row)]
+    // cells[0]=checkbox, [1]=#, [2]=Lot ID, [3]=Desc, [4]=GSM, [5]=Grade, [6]=Width, [7]=TR Date, [8]=Qty, [9]=Lokasi, [10]=Status, [11]=Komentar, [12]=QR, [13]=Arrow
     const cols = [
         { label: '#',         w: '4%',  fn: (r,i) => (i+1) },
-        { label: 'Lot ID',    w: '14%', fn: r => r.cells[1]?.textContent?.trim() || '' },
-        { label: 'Description', w: '18%', fn: r => r.cells[2]?.textContent?.trim() || '' },
-        { label: 'GSM',       w: '6%',  fn: r => r.cells[3]?.textContent?.trim() || '' },
-        { label: 'Grade',     w: '8%',  fn: r => r.cells[4]?.textContent?.trim() || '' },
-        { label: 'Width',     w: '6%',  fn: r => r.cells[5]?.textContent?.trim() || '' },
-        { label: 'TR Date',   w: '10%', fn: r => r.cells[6]?.textContent?.trim() || '' },
-        { label: 'Qty',       w: '7%',  fn: r => r.cells[7]?.textContent?.trim() || '' },
-        { label: 'Lokasi',    w: '10%', fn: r => r.cells[8]?.textContent?.trim() || '' },
-        { label: 'Status',    w: '8%',  fn: r => r.cells[9]?.textContent?.trim() || '' },
-        { label: 'Komentar',  w: '9%',  fn: r => r.cells[10]?.textContent?.trim() || '' },
+        { label: 'Lot ID',    w: '14%', fn: r => r.cells[2]?.textContent?.trim() || '' },
+        { label: 'Description', w: '18%', fn: r => r.cells[3]?.textContent?.trim() || '' },
+        { label: 'GSM',       w: '6%',  fn: r => r.cells[4]?.textContent?.trim() || '' },
+        { label: 'Grade',     w: '8%',  fn: r => r.cells[5]?.textContent?.trim() || '' },
+        { label: 'Width',     w: '6%',  fn: r => r.cells[6]?.textContent?.trim() || '' },
+        { label: 'TR Date',   w: '10%', fn: r => r.cells[7]?.textContent?.trim() || '' },
+        { label: 'Qty',       w: '7%',  fn: r => r.cells[8]?.textContent?.trim() || '' },
+        { label: 'Lokasi',    w: '10%', fn: r => r.cells[9]?.textContent?.trim() || '' },
+        { label: 'Status',    w: '8%',  fn: r => r.cells[10]?.textContent?.trim() || '' },
+        { label: 'Komentar',  w: '9%',  fn: r => r.cells[11]?.textContent?.trim() || '' },
     ];
 
     const ths = cols.map(c => `<th style="width:${c.w}">${c.label}</th>`).join('');
