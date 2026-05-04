@@ -75,8 +75,27 @@ class DashboardController extends Controller
 
     public function markAsRead(Request $request)
     {
-        $type = $request->input('type'); // 'no_location', 'recent_defects'
+        $type = $request->input('type'); // 'no_location', 'recent_defects', or 'all'
         $referenceId = $request->input('reference_id'); // specific item, or null = mark all of type
+
+        $service = new NotificationService();
+
+        // "all" = mark every type
+        if ($type === 'all' || (!$type && !$referenceId)) {
+            $types = ['no_location', 'recent_defects'];
+            foreach ($types as $t) {
+                $items = $t === 'no_location'
+                    ? $service->getAllItemsWithoutLocationRaw()
+                    : $service->getAllRecentDefectsRaw();
+                foreach ($items as $item) {
+                    NotificationRead::firstOrCreate([
+                        'type' => $t,
+                        'reference_id' => $item->id,
+                    ]);
+                }
+            }
+            return response()->json($service->getNotifications());
+        }
 
         if (!$type || !in_array($type, ['no_location', 'recent_defects'])) {
             return response()->json(['error' => 'Invalid type'], 400);
@@ -90,7 +109,6 @@ class DashboardController extends Controller
             ]);
         } else {
             // Mark all items of this type as read
-            $service = new NotificationService();
             $items = $type === 'no_location'
                 ? $service->getAllItemsWithoutLocationRaw()
                 : $service->getAllRecentDefectsRaw();

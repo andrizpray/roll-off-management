@@ -713,7 +713,7 @@
             fetch('/notifications/mark-read', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                body: JSON.stringify({})
+                body: JSON.stringify({ type: 'all' })
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
