@@ -35,19 +35,15 @@ class DashboardController extends Controller
             WHERE COALESCE(NULLIF(so_desember,'-'), NULLIF(receiving_2026,'-'), NULLIF(so_maret_2026,'-'), NULLIF(pic_2026,'-'), NULLIF(rcv_cnv_2026,'-'), NULLIF(so_september,'-')) IS NULL
         ")->cnt;
 
-        // Paper type distribution
-        $paperTypeStats = RollItem::selectRaw("paper_type, COUNT(*) as count")
-            ->whereNotNull('paper_type')->where('paper_type', '!=', '')
-            ->groupBy('paper_type')->orderByDesc('count')->limit(10)->get();
+        // Paper type distribution — parse from description since paper_type column is mostly NULL
+        $paperTypeStats = $this->parseDescriptionStats('paper_type');
 
         // Defect by reason
         $defectReasonStats = DefectItem::selectRaw("reason, COUNT(*) as count")
             ->whereNotNull('reason')->groupBy('reason')->orderByDesc('count')->limit(10)->get();
 
-        // GSM distribution
-        $gsmStats = RollItem::selectRaw("gsm, COUNT(*) as count")
-            ->whereNotNull('gsm')->where('gsm', '!=', '')
-            ->groupBy('gsm')->orderByDesc('count')->limit(10)->get();
+        // GSM distribution — parse from description since gsm column is mostly NULL
+        $gsmStats = $this->parseDescriptionStats('gsm');
 
         // Status breakdown
         $statusStats = RollItem::selectRaw("status_barang, COUNT(*) as count")
@@ -123,5 +119,88 @@ class DashboardController extends Controller
 
         // Return updated counts
         return response()->json($service->getNotifications());
+    }
+
+    /**
+     * Parse descriptions from roll_items and return distribution stats.
+     * PHP-based parsing using the same logic as DefectItemController::parseDescription.
+     *
+     * @param string $field 'paper_type' or 'gsm'
+     * @return \Illuminate\Support\Collection
+     */
+    private function parseDescriptionStats(string $field): \Illuminate\Support\Collection
+    {
+        // Get distinct descriptions to avoid processing 17k+ rows
+        $descriptions = DB::table('roll_items')
+            ->selectRaw('description, COUNT(*) as cnt')
+            ->whereNotNull('description')
+            ->where('description', '!=', '')
+            ->where('description', '!=', '-')
+            ->groupBy('description')
+            ->get();
+
+        $stats = [];
+
+        foreach ($descriptions as $row) {
+            $parsed = $this->parseDescriptionForDashboard($row->description);
+
+            if ($field === 'paper_type' && !empty($parsed['paper_type'])) {
+                $key = $parsed['paper_type'];
+                $stats[$key] = ($stats[$key] ?? 0) + (int) $row->cnt;
+            } elseif ($field === 'gsm' && !empty($parsed['gsm'])) {
+                $key = (string) $parsed['gsm'];
+                $stats[$key] = ($stats[$key] ?? 0) + (int) $row->cnt;
+            }
+        }
+
+        arsort($stats);
+        $stats = array_slice($stats, 0, 10, true);
+
+        if ($field === 'paper_type') {
+            return collect($stats)->map(fn($count, $label) => (object) [
+                'paper_type' => $label,
+                'count' => $count,
+            ])->values();
+        }
+
+        return collect($stats)->map(fn($count, $label) => (object) [
+            'gsm' => $label,
+            'count' => $count,
+        ])->values();
+    }
+
+    /**
+     * Parse a single description string (same logic as DefectItemController).
+     */
+    private function parseDescriptionForDashboard(string $description): array
+    {
+        $result = ['paper_type' => null, 'gsm' => null];
+        $desc = trim($description);
+
+        // Extract plybond: E followed by digits
+        $desc = preg_replace('/\bE\d{2,4}\b/i', ' ', $desc);
+
+        // Handle "350g" format
+        if (preg_match('/(\d{2,4})g\b/i', $desc, $mg)) {
+            $result['gsm'] = (int) $mg[1];
+            $desc = preg_replace('/\d{2,4}g\b/i', ' ', $desc);
+        }
+
+        // Clean up
+        $desc = preg_replace('/\s+/', ' ', trim($desc));
+
+        // Extract paper_type + gsm: "B KRAFT BK125 690"
+        if (preg_match('/^(.*?)\s*([A-Za-z]+)(\d{2,4})\s*(\d{0,4}?)\s*$/i', $desc, $m)) {
+            $prefix = trim($m[1]);
+            $code = $m[2];
+            $gsm = (int) $m[3];
+
+            $result['paper_type'] = ($prefix !== '' ? $prefix . ' ' : '') . $code;
+            if ($result['gsm'] === null) {
+                $result['gsm'] = $gsm;
+            }
+        }
+
+        return $result;
     }
 }
