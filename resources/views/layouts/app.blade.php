@@ -396,6 +396,22 @@
                     <span class="nav-icon"><i class="fas fa-triangle-exclamation"></i></span>
                     <span class="nav-label">Barang Bermasalah</span>
                 </a>
+                <div class="px-5 mt-4 mb-2">
+                    <span class="nav-label text-[10px] font-semibold uppercase tracking-wider text-white/30">Logistik</span>
+                </div>
+                <a href="{{ route('delivery.index') }}" class="nav-item {{ request()->routeIs('delivery.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fas fa-truck"></i></span>
+                    <span class="nav-label">Delivery Order</span>
+                    @if(isset($unassignedCount) && $unassignedCount > 0)
+                        <span class="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-4 px-1 flex items-center justify-center leading-none">
+                            {{ $unassignedCount > 99 ? '99+' : $unassignedCount }}
+                        </span>
+                    @endif
+                </a>
+                <a href="{{ route('mobil.index') }}" class="nav-item {{ request()->routeIs('mobil.*') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="fas fa-truck-moving"></i></span>
+                    <span class="nav-label">Kendaraan</span>
+                </a>
             </nav>
 
             <div class="px-5 py-4" style="border-top: 1px solid rgba(255,255,255,0.1);">

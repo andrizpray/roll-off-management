@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DefectItemController;
+use App\Http\Controllers\DeliveryOrderController;
+use App\Http\Controllers\MobilController;
 use App\Http\Controllers\RollItemController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,3 +36,22 @@ Route::get('/defects/import/template', [DefectItemController::class, 'importTemp
 Route::get('/defects/{id}/edit', [DefectItemController::class, 'edit'])->name('defects.edit');
 Route::put('/defects/{id}', [DefectItemController::class, 'update'])->name('defects.update');
 Route::delete('/defects/{id}', [DefectItemController::class, 'destroy'])->name('defects.destroy');
+
+// ── Delivery Orders ──────────────────────────────────────────────────
+Route::get('/delivery', [DeliveryOrderController::class, 'index'])->name('delivery.index');
+Route::get('/delivery/create', [DeliveryOrderController::class, 'create'])->name('delivery.create');
+Route::post('/delivery', [DeliveryOrderController::class, 'store'])->name('delivery.store');
+Route::get('/delivery/{id}', [DeliveryOrderController::class, 'show'])->name('delivery.show');
+Route::get('/delivery/{id}/edit', [DeliveryOrderController::class, 'edit'])->name('delivery.edit');
+Route::put('/delivery/{id}', [DeliveryOrderController::class, 'update'])->name('delivery.update');
+Route::delete('/delivery/{id}', [DeliveryOrderController::class, 'destroy'])->name('delivery.destroy');
+Route::post('/delivery/{id}/confirm', [DeliveryOrderController::class, 'confirm'])->name('delivery.confirm');
+Route::post('/delivery/{id}/assign', [DeliveryOrderController::class, 'assign'])->name('delivery.assign');
+Route::post('/delivery/{id}/delivered', [DeliveryOrderController::class, 'delivered'])->name('delivery.delivered');
+Route::get('/delivery/{id}/manifest', [DeliveryOrderController::class, 'exportManifest'])->name('delivery.manifest');
+Route::get('/api/lot-lookup', [DeliveryOrderController::class, 'lotLookup'])->name('api.lot-lookup');
+
+// ── Mobil ──────────────────────────────────────────────────────────────
+Route::get('/mobil', [MobilController::class, 'index'])->name('mobil.index');
+Route::get('/mobil/{mobilId}', [MobilController::class, 'show'])->name('mobil.show');
+Route::delete('/mobil/{mobilId}/do/{doId}', [MobilController::class, 'removeDo'])->name('mobil.remove-do');
