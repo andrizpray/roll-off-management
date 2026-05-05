@@ -81,7 +81,9 @@
                         @if($item->width)
                             {{ $item->gsm ? ' · ' : '' }}{{ $item->width }}mm
                         @endif
-                        @if(!$item->gsm && !$item->width)Belum ada data lengkap@endif
+                        @unless($item->gsm || $item->width)
+                            Belum ada data lengkap
+                        @endunless
                     </p>
                 </a>
                 <div class="text-right flex-shrink-0">
@@ -137,7 +139,9 @@
                         @endif
                     </p>
                     <p class="text-xs text-gray-400 truncate">
-                        @if($item->reason){{ $item->reason }}@elseif($item->gsm){{ $item->gsm }}@else-Barang bermasalah@endif
+                        @if($item->reason){{ $item->reason }}@elseif($item->gsm){{ $item->gsm }}@else
+                            Barang bermasalah
+                        @endif
                     </p>
                 </a>
                 <div class="text-right flex-shrink-0">

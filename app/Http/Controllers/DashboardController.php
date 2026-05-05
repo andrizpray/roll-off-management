@@ -86,7 +86,7 @@ class DashboardController extends Controller
                 foreach ($items as $item) {
                     NotificationRead::firstOrCreate([
                         'type' => $t,
-                        'reference_id' => $item->id,
+                        'reference_id' => $item,
                     ]);
                 }
             }
@@ -112,7 +112,7 @@ class DashboardController extends Controller
             foreach ($items as $item) {
                 NotificationRead::firstOrCreate([
                     'type' => $type,
-                    'reference_id' => $item->id,
+                    'reference_id' => $item,
                 ]);
             }
         }
