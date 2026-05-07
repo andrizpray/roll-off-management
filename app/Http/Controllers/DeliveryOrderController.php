@@ -139,6 +139,7 @@ class DeliveryOrderController extends Controller
         }
 
         $validated = $request->validate([
+            'items'              => 'required|array|min:1',
             'items.*.lot_id'     => 'required|string|exists:roll_items,lot_id',
             'items.*.qty_order'  => 'required|integer|min:1',
             'items.*.notes'     => 'nullable|string',

@@ -20,8 +20,8 @@ class DoAssignment extends Model
 
     protected $casts = [
         'assigned_date' => 'date',
-        'departure_time' => 'datetime:H:i',
-        'arrival_time' => 'datetime:H:i',
+        'departure_time' => 'string',
+        'arrival_time' => 'string',
     ];
 
     public function deliveryOrder()
