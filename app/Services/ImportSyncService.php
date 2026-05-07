@@ -32,7 +32,8 @@ class ImportSyncService
 
         for ($row = 1; $row <= min(5, $highestRow); $row++) {
             $headers = [];
-            for ($col = 1; $col <= $sheet->getHighestDataRow(); $col++) {
+            $highestDataCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($sheet->getHighestDataColumn());
+            for ($col = 1; $col <= $highestDataCol; $col++) {
                 $val = $this->getCellValue($sheet, $col, $row);
                 if ($val) $headers[] = strtolower($val);
             }
@@ -101,7 +102,7 @@ class ImportSyncService
             'lotid' => 'lot_id', 'lot_id' => 'lot_id', 'lot id' => 'lot_id',
             'itemid' => 'item_id', 'item_id' => 'item_id', 'item id' => 'item_id',
             'weight' => 'end_qty', 'endqty' => 'end_qty', 'end_qty' => 'end_qty',
-            'papertype' => 'paper_type', 'paper_type' => 'paper type', 'paper type' => 'paper_type',
+            'papertype' => 'paper_type', 'paper_type' => 'paper_type', 'paper type' => 'paper_type',
             'gramature' => 'gsm', 'gsm' => 'gsm',
             'plybond' => 'plybond',
             'width' => 'width',

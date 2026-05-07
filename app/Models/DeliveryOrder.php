@@ -43,11 +43,6 @@ class DeliveryOrder extends Model
         return $this->hasMany(DoAssignment::class);
     }
 
-    public function rollItem()
-    {
-        return $this->belongsTo(RollItem::class);
-    }
-
     /**
      * Generate sequential DO number: DO-{year}-{month}-{seq:04d}
      */
